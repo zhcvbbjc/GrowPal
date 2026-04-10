@@ -30,8 +30,8 @@ exports.openOrCreateConversation = async (req, res) => {
         if (!peerId || Number.isNaN(peerId)) {
             return res.status(400).json({ message: '请指定对方用户 peer_id' });
         }
-        const conversationId = await UserChat.findOrCreateConversation(req.user.id, peerId);
-        res.status(201).json({ conversationId });
+        const sessionId = await UserChat.findOrCreateConversation(req.user.id, peerId);
+        res.status(201).json({ conversationId: sessionId, sessionId });
     } catch (e) {
         if (e.message === '不能与自己发起会话') {
             return res.status(400).json({ message: e.message });
@@ -43,7 +43,8 @@ exports.openOrCreateConversation = async (req, res) => {
 
 exports.getMessages = async (req, res) => {
     try {
-        const conv = await UserChat.getConversationForUser(req.params.conversationId, req.user.id);
+        const sessionId = req.params.conversationId;
+        const conv = await UserChat.getConversationForUser(sessionId, req.user.id);
         if (!conv) return res.status(404).json({ message: '会话不存在' });
 
         const limit = Math.min(Number(req.query.limit) || 50, 100);
@@ -69,7 +70,8 @@ exports.sendMessage = async (req, res) => {
             return res.status(400).json({ message: '消息不能为空' });
         }
 
-        const conv = await UserChat.getConversationForUser(req.params.conversationId, req.user.id);
+        const sessionId = req.params.conversationId;
+        const conv = await UserChat.getConversationForUser(sessionId, req.user.id);
         if (!conv) return res.status(404).json({ message: '会话不存在' });
 
         const messageId = await UserChat.addMessage(conv.id, req.user.id, content);

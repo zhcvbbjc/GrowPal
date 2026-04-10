@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Users, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote } from './Icons';
+import { Search, Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Users, UsersIcon, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote, Chat } from './Icons';
 import { cn } from '../lib/utils';
 import { fetchPosts, fetchQuestions, getApiMessage, type PostRow, type QuestionRow } from '../services/growpalApi';
 import { useToast } from '../components/Toast';
@@ -46,7 +46,7 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
 
   const stats = [
     { icon: TrendingUp, label: '今日动态', value: '128', color: 'text-green-600' },
-    { icon: Users, label: '活跃用户', value: '1,024', color: 'text-blue-600' },
+    { icon: UsersIcon, label: '活跃用户', value: '1,024', color: 'text-blue-600' },
     { icon: Award, label: '解决问题', value: '856', color: 'text-purple-600' },
   ];
 
@@ -54,7 +54,7 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
     { icon: Psychology, label: 'AI 问答', color: 'from-primary to-primary-container', screen: 'chat' },
     { icon: EditSquare, label: '发动态', color: 'from-blue-500 to-blue-600', screen: 'community' },
     { icon: MessageSquareQuote, label: '提问题', color: 'from-purple-500 to-purple-600', screen: 'community' },
-    { icon: ChatBubble, label: '私信', color: 'from-orange-500 to-orange-600', screen: 'messages' },
+    { icon: Chat, label: '私信', color: 'from-orange-500 to-orange-600', screen: 'messages' },
   ];
 
   return (
@@ -120,14 +120,10 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
               className="flex flex-col items-center gap-2 p-3 md:p-4 bg-white rounded-2xl shadow-sm hover:shadow-md border border-outline-variant/10 active:scale-95 transition-all"
             >
               <div className={cn(
-                'w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br flex items-center justify-center text-white text-2xl font-bold shadow-md',
-                typeof action.icon === 'string' ? '' : 'p-3'
+                'w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br flex items-center justify-center text-white shadow-md',
+                action.color
               )}>
-                {typeof action.icon === 'string' ? (
-                  action.icon
-                ) : (
-                  <action.icon className="w-6 h-6" />
-                )}
+                <action.icon className="w-6 h-6" />
               </div>
               <span className="text-xs font-semibold text-on-surface">{action.label}</span>
             </button>
@@ -181,7 +177,7 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
               <>
                 {recentPosts.map((post) => (
                   <article
-                    key={post.id}
+                    key={post.post_id}
                     onClick={() => onNavigate('community')}
                     className="bg-white rounded-2xl p-4 md:p-5 border border-outline-variant/10 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-[0.98]"
                   >
@@ -228,7 +224,7 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
 
                 {recentQuestions.map((q) => (
                   <article
-                    key={q.id}
+                    key={q.question_id}
                     onClick={() => onNavigate('community')}
                     className="bg-white rounded-2xl p-4 md:p-5 border border-outline-variant/10 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-[0.98]"
                   >

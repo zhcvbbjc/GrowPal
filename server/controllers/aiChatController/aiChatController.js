@@ -3,7 +3,7 @@ const { chat: llmChat } = require('../../services/llmService');
 
 const SYSTEM_PROMPT =
     process.env.LLM_SYSTEM_PROMPT ||
-    '你是 GrowPal 应用里的智能助手，回答简洁、友好、准确，使用简体中文。';
+    '你是 GrowPal 应用里的智能农业助手。你精通作物种植、土壤管理、病虫害防治等农业知识。回答简洁、友好、准确，使用简体中文。';
 
 exports.createSession = async (req, res) => {
     try {
@@ -65,8 +65,16 @@ exports.sendMessage = async (req, res) => {
         const session = await AiChat.getSession(req.params.sessionId, req.user.id);
         if (!session) return res.status(404).json({ message: '会话不存在' });
 
-        await AiChat.addMessage(session.id, 'user', content);
+        // 保存用户消息到 ai_chats 表
+        await AiChat.addMessage(
+            session.id, 
+            'user', 
+            content, 
+            req.user.id,
+            process.env.LLM_MODEL || 'deepseek-chat'
+        );
 
+        // 获取对话历史
         const history = await AiChat.listMessages(session.id, 40);
         const messagesForLlm = [{ role: 'system', content: SYSTEM_PROMPT }];
         for (const m of history) {
@@ -76,24 +84,43 @@ exports.sendMessage = async (req, res) => {
         }
 
         let reply;
+        let tokenCount = 0;
         try {
+            console.log(`[AI] 调用 DeepSeek API，消息长度: ${messagesForLlm.length} 条`);
             reply = await llmChat(messagesForLlm);
+            tokenCount = reply.length; // 简化计算，实际应该使用 tokenizer
+            console.log(`[AI] 回复成功，回复长度: ${reply.length} 字符`);
         } catch (err) {
+            console.error('[AI] 大模型调用失败:', err.message);
             if (err.code === 'LLM_NO_KEY') {
                 return res.status(503).json({
-                    message: err.message
+                    message: '未配置大模型 API 密钥，请联系管理员配置 LLM_API_KEY 环境变量'
                 });
             }
-            console.error(err);
+            if (err.code === 'LLM_HTTP') {
+                return res.status(502).json({
+                    message: '大模型服务暂时不可用，请稍后重试',
+                    detail: err.message,
+                    status: err.status
+                });
+            }
             return res.status(502).json({
                 message: '大模型调用失败',
                 detail: err.message
             });
         }
 
-        const assistantMsgId = await AiChat.addMessage(session.id, 'assistant', reply);
+        // 保存AI回复到 ai_chats 表
+        const assistantMsgId = await AiChat.addMessage(
+            session.id,
+            'assistant',
+            reply,
+            req.user.id,
+            process.env.LLM_MODEL || 'deepseek-chat'
+        );
         await AiChat.updateSessionTime(session.id);
 
+        // 更新会话标题（如果是新对话）
         const firstUserLine = content.split('\n')[0].slice(0, 40);
         if (session.title === '新对话' && firstUserLine) {
             await AiChat.updateSessionTitle(session.id, req.user.id, firstUserLine);
@@ -101,10 +128,11 @@ exports.sendMessage = async (req, res) => {
 
         res.json({
             reply,
-            assistantMessageId: assistantMsgId
+            assistantMessageId: assistantMsgId,
+            token_count: tokenCount
         });
     } catch (e) {
-        console.error(e);
-        res.status(500).json({ message: '发送失败', error: e.message });
+        console.error('[AI] 发送消息失败:', e);
+        res.status(500).json({ message: '发送失败，请稍后重试', error: e.message });
     }
 };

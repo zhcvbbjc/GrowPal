@@ -96,7 +96,8 @@ export const AIChatScreen = () => {
     return () => {
       cancelled = true;
     };
-  }, [loadSessionMessages, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -171,6 +172,14 @@ export const AIChatScreen = () => {
     };
     setMessages((prev) => [...prev, optimistic]);
 
+    // 添加加载中的AI消息占位符
+    const loadingMsg: ChatMessage = {
+      role: 'model',
+      text: '...',
+      timestamp: formatTime(new Date().toISOString()),
+    };
+    setMessages((prev) => [...prev, loadingMsg]);
+
     try {
       const res = await sendAiMessage(sessionId, text);
       const aiMsg: ChatMessage = {
@@ -178,13 +187,19 @@ export const AIChatScreen = () => {
         text: res.reply,
         timestamp: formatTime(new Date().toISOString()),
       };
-      setMessages((prev) => [...prev, aiMsg]);
+      // 替换加载中的消息为实际回复
+      setMessages((prev) => {
+        const newMsgs = [...prev];
+        newMsgs[newMsgs.length - 1] = aiMsg;
+        return newMsgs;
+      });
       await refreshSessions();
-    } catch (e) {
-      const msg = getApiMessage(e);
+    } catch (e: any) {
+      const msg = e.response?.data?.message || getApiMessage(e);
       setError(msg);
       toast.error(msg);
-      setMessages((prev) => prev.filter((m) => m !== optimistic));
+      // 移除加载中的占位符和用户消息
+      setMessages((prev) => prev.filter((m) => m !== optimistic && m !== loadingMsg));
     } finally {
       setIsLoading(false);
     }
@@ -192,9 +207,15 @@ export const AIChatScreen = () => {
 
   if (bootLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-on-surface-variant">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm font-medium">连接智能助手…</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="relative">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+          <div className="absolute inset-0 w-12 h-12 animate-ping rounded-full bg-primary/20"></div>
+        </div>
+        <div className="text-center">
+          <p className="text-base font-semibold text-on-surface mb-1">正在连接智能助手...</p>
+          <p className="text-sm text-on-surface-variant">首次加载可能需要几秒钟</p>
+        </div>
       </div>
     );
   }
@@ -202,8 +223,17 @@ export const AIChatScreen = () => {
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500 relative">
       {error && (
-        <div className="mb-4 p-4 rounded-xl bg-error-container/30 text-error text-sm font-medium border border-error/20">
-          {error}
+        <div className="mb-4 mx-4 p-4 rounded-xl bg-error-container/30 text-error text-sm font-medium border border-error/20 flex items-start gap-3">
+          <div className="flex-1">
+            <p className="font-bold mb-1">请求失败</p>
+            <p className="text-xs opacity-80">{error}</p>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="p-1 hover:bg-error-container/50 rounded-lg transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 

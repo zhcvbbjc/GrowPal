@@ -3,9 +3,12 @@ import http, { getApiMessage } from './api';
 export { getApiMessage };
 
 export type PostRow = {
-  id: number;
+  id?: number;
+  post_id: number;
   user_id: number;
+  title: string | null;
   content: string;
+  tags: string | null;
   image_path: string | null;
   username?: string;
   avatar?: string | null;
@@ -13,10 +16,12 @@ export type PostRow = {
 };
 
 export type QuestionRow = {
-  id: number;
+  id?: number;
+  question_id: number;
   user_id: number;
   title: string;
   content: string;
+  tags: string | null;
   image_path: string | null;
   username?: string;
   avatar?: string | null;
@@ -195,9 +200,15 @@ export async function fetchMe() {
 }
 
 /** 创建文章 */
-export async function createPost(content: string, image?: File | null) {
+export async function createPost(content: string, image?: File | null, title?: string, tags?: string[]) {
   const formData = new FormData();
+  if (title) {
+    formData.append('title', title);
+  }
   formData.append('content', content);
+  if (tags && tags.length > 0) {
+    formData.append('tags', JSON.stringify(tags));
+  }
   if (image) {
     formData.append('image', image);
   }
@@ -208,10 +219,13 @@ export async function createPost(content: string, image?: File | null) {
 }
 
 /** 创建问题 */
-export async function createQuestion(title: string, content: string, image?: File | null) {
+export async function createQuestion(title: string, content: string, image?: File | null, tags?: string[]) {
   const formData = new FormData();
   formData.append('title', title);
   formData.append('content', content);
+  if (tags && tags.length > 0) {
+    formData.append('tags', JSON.stringify(tags));
+  }
   if (image) {
     formData.append('image', image);
   }

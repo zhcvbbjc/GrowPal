@@ -1,11 +1,12 @@
 /**
- * OpenAI 兼容 Chat Completions（支持官方 API、Azure、国内兼容网关等，通过环境变量配置）
+ * DeepSeek 兼容 Chat Completions API
+ * 基于 OpenAI API 格式，使用 DeepSeek 作为默认提供商
  */
 function getConfig() {
-    const apiKey = process.env.LLM_API_KEY || process.env.OPENAI_API_KEY;
+    const apiKey = process.env.LLM_API_KEY;
     const base =
-        (process.env.LLM_API_BASE || 'https://api.openai.com/v1').replace(/\/$/, '') + '/chat/completions';
-    const model = process.env.LLM_MODEL || 'gpt-4o-mini';
+        (process.env.LLM_API_BASE || 'https://api.deepseek.com/v1').replace(/\/$/, '') + '/chat/completions';
+    const model = process.env.LLM_MODEL || 'deepseek-chat';
     return { apiKey, base, model };
 }
 
@@ -16,7 +17,7 @@ function getConfig() {
 async function chat(messages) {
     const { apiKey, base, model } = getConfig();
     if (!apiKey) {
-        const err = new Error('未配置大模型 API 密钥：请在环境变量中设置 LLM_API_KEY 或 OPENAI_API_KEY');
+        const err = new Error('未配置大模型 API 密钥：请在环境变量中设置 LLM_API_KEY');
         err.code = 'LLM_NO_KEY';
         throw err;
     }
@@ -30,7 +31,8 @@ async function chat(messages) {
         body: JSON.stringify({
             model,
             messages,
-            temperature: Number(process.env.LLM_TEMPERATURE) || 0.7
+            temperature: Number(process.env.LLM_TEMPERATURE) || 0.7,
+            max_tokens: 2000
         })
     });
 

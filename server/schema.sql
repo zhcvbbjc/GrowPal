@@ -17,21 +17,30 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS posts (
-    id          INT PRIMARY KEY AUTO_INCREMENT,
+    post_id     INT PRIMARY KEY AUTO_INCREMENT,
     user_id     INT          NOT NULL,
+    title       VARCHAR(255) NOT NULL,
     content     TEXT         NOT NULL,
-    image_path  VARCHAR(512) DEFAULT NULL,
+    cover_image VARCHAR(255) DEFAULT NULL,
+    tags        VARCHAR(255) DEFAULT NULL,
+    status      VARCHAR(20)  DEFAULT 'published',
+    view_count  INT          DEFAULT 0,
+    image_path  VARCHAR(100) DEFAULT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_posts_user (user_id)
 );
 
 CREATE TABLE IF NOT EXISTS questions (
-    id          INT PRIMARY KEY AUTO_INCREMENT,
+    question_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id     INT          NOT NULL,
     title       VARCHAR(255) NOT NULL,
     content     TEXT         NOT NULL,
-    image_path  VARCHAR(512) DEFAULT NULL,
+    image_path  VARCHAR(100) DEFAULT NULL,
+    tags        VARCHAR(100) DEFAULT NULL,
+    status      VARCHAR(20)  DEFAULT 'open',
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_questions_user (user_id)
 );
 
@@ -76,23 +85,19 @@ CREATE TABLE IF NOT EXISTS ai_messages (
 );
 
 -- 用户间私聊
-CREATE TABLE IF NOT EXISTS user_conversations (
-    id         INT PRIMARY KEY AUTO_INCREMENT,
-    user_low   INT NOT NULL,
-    user_high  INT NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_user_pair (user_low, user_high),
-    INDEX idx_uc_low (user_low),
-    INDEX idx_uc_high (user_high)
-);
-
-CREATE TABLE IF NOT EXISTS user_messages (
-    id              INT PRIMARY KEY AUTO_INCREMENT,
-    conversation_id INT          NOT NULL,
-    sender_id       INT          NOT NULL,
-    content         TEXT         NOT NULL,
-    is_read         TINYINT(1) DEFAULT 0,
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_um_conv (conversation_id),
-    CONSTRAINT fk_um_conv FOREIGN KEY (conversation_id) REFERENCES user_conversations (id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS user_chats (
+    message_id  INT PRIMARY KEY AUTO_INCREMENT,
+    sender_id   INT          NOT NULL,
+    session_id  VARCHAR(64)  NOT NULL,
+    role        VARCHAR(20)  NOT NULL DEFAULT 'user',
+    model_name  VARCHAR(50)  DEFAULT NULL,
+    receiver_id INT          NOT NULL,
+    content     TEXT         NOT NULL,
+    image_url   VARCHAR(255) DEFAULT NULL,
+    is_read     TINYINT(1)   DEFAULT 0,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_sender (sender_id),
+    INDEX idx_session (session_id),
+    INDEX idx_receiver (receiver_id)
 );

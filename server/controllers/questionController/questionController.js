@@ -12,7 +12,7 @@ function uploadsPhysical(imagePath) {
 
 exports.createQuestion = async (req, res) => {
     try {
-        const { title, content } = req.body;
+        const { title, content, tags } = req.body;
         if (!title || !String(title).trim()) {
             return res.status(400).json({ message: '请填写标题' });
         }
@@ -22,7 +22,7 @@ exports.createQuestion = async (req, res) => {
         const user_id = req.user.id;
         const image_path = req.file ? `/uploads/${req.file.filename}` : null;
 
-        const questionId = await Question.create({ user_id, title, content, image_path });
+        const questionId = await Question.create({ user_id, title, content, tags, image_path });
         res.status(201).json({ message: '提问成功', questionId });
     } catch (err) {
         console.error(err);

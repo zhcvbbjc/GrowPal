@@ -12,14 +12,14 @@ function uploadsPhysical(imagePath) {
 
 exports.createPost = async (req, res) => {
     try {
-        const { content } = req.body;
+        const { content, title, tags } = req.body;
         if (!content || !String(content).trim()) {
             return res.status(400).json({ message: '请填写内容' });
         }
         const user_id = req.user.id;
         const image_path = req.file ? `/uploads/${req.file.filename}` : null;
 
-        const postId = await Post.create({ user_id, content, image_path });
+        const postId = await Post.create({ user_id, content, title, tags, image_path });
         res.status(201).json({ message: '发布成功', postId });
     } catch (err) {
         console.error(err);

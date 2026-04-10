@@ -49,7 +49,8 @@ import {
   TrendingUp,
   Users as UsersIcon,
   Award,
-  Trash2
+  Trash2,
+  Trash2 as Delete
 } from 'lucide-react';
 
 export {
@@ -101,7 +102,9 @@ export {
   Lock,
   TrendingUp,
   UsersIcon as Users,
+  UsersIcon,
   Award,
   Trash2,
+  Trash2 as Delete,
   Person as User
 };
