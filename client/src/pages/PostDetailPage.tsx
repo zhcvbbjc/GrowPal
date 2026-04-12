@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowBack, Favorite, ChatBubble, Loader2, Trash2, User, Calendar } from './Icons';
+import { ArrowBack, Favorite, ChatBubble, Loader2, Trash2, User, Calendar, AutoAwesome } from './Icons';
 import {
   fetchPost,
   fetchQuestion,
@@ -45,6 +45,8 @@ export function PostDetailPage({ type, id, onBack }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiAnswer, setAiAnswer] = useState<string | null>(null);
 
   // 加载详情数据
   useEffect(() => {
@@ -62,6 +64,7 @@ export function PostDetailPage({ type, id, onBack }: Props) {
           setAuthor(p.username || '匿名用户');
           setAuthorId(p.user_id);
           setCreatedAt(p.created_at || '');
+          setAiSummary(p.ai_summary || null);
           if (p.tags) {
             try {
               setTags(JSON.parse(p.tags));
@@ -85,6 +88,7 @@ export function PostDetailPage({ type, id, onBack }: Props) {
           setAuthor(q.username || '匿名用户');
           setAuthorId(q.user_id);
           setCreatedAt(q.created_at || '');
+          setAiAnswer(q.ai_answer || null);
           if (q.tags) {
             try {
               setTags(JSON.parse(q.tags));
@@ -333,6 +337,40 @@ export function PostDetailPage({ type, id, onBack }: Props) {
           </div>
         </div>
       </article>
+
+      {/* AI 总结/解答区域 */}
+      {(type === 'post' && aiSummary) || (type === 'question' && aiAnswer) ? (
+        <section className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl border border-primary/20 overflow-hidden">
+          <div className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <AutoAwesome className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="text-base font-bold text-on-surface font-headline">
+                {type === 'post' ? 'AI 智能总结' : 'AI 智能解答'}
+              </h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                AI 生成
+              </span>
+            </div>
+            <div className="text-sm text-on-surface leading-relaxed whitespace-pre-wrap bg-surface-container-lowest/50 rounded-xl p-4 border border-primary/10">
+              {type === 'post' ? aiSummary : aiAnswer}
+            </div>
+          </div>
+        </section>
+      ) : (type === 'question' && !aiAnswer) ? (
+        <section className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <AutoAwesome className="w-5 h-5 text-primary" />
+            </div>
+            <h3 className="text-sm font-bold text-on-surface">AI 解答生成中...</h3>
+          </div>
+          <p className="text-xs text-on-surface-variant">
+            AI 正在思考并生成专业解答，请稍后刷新页面查看
+          </p>
+        </section>
+      ) : null}
 
       {/* 评论区 */}
       <section>

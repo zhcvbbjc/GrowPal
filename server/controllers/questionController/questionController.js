@@ -1,4 +1,5 @@
 const Question = require('../../models/Question');
+const { answerQuestion } = require('../../services/llmService');
 const fs = require('fs');
 const path = require('path');
 
@@ -23,6 +24,23 @@ exports.createQuestion = async (req, res) => {
         const image_path = req.file ? `/uploads/${req.file.filename}` : null;
 
         const questionId = await Question.create({ user_id, title, content, tags, image_path });
+        
+        // 异步生成 AI 解答，不阻塞响应
+        (async () => {
+            try {
+                console.log(`[AI 解答] 开始为问题 ${questionId} 生成解答...`);
+                const answer = await answerQuestion(title, content);
+                if (answer) {
+                    await Question.updateAiAnswer(questionId, answer);
+                    console.log(`[AI 解答] 问题 ${questionId} 解答生成成功: "${answer.slice(0, 50)}..."`);
+                } else {
+                    console.log(`[AI 解答] 问题 ${questionId} 解答生成为空，跳过更新`);
+                }
+            } catch (err) {
+                console.error(`[AI 解答] 问题 ${questionId} 解答生成失败:`, err.message);
+            }
+        })();
+        
         res.status(201).json({ message: '提问成功', questionId });
     } catch (err) {
         console.error(err);

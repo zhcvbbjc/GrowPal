@@ -1,5 +1,5 @@
 const AiChat = require('../../models/AiChat');
-const { chat: llmChat } = require('../../services/llmService');
+const { chat: llmChat, generateTitle } = require('../../services/llmService');
 
 const SYSTEM_PROMPT =
     process.env.LLM_SYSTEM_PROMPT ||
@@ -120,10 +120,19 @@ exports.sendMessage = async (req, res) => {
         );
         await AiChat.updateSessionTime(session.id);
 
-        // 更新会话标题（如果是新对话）
-        const firstUserLine = content.split('\n')[0].slice(0, 40);
-        if (session.title === '新对话' && firstUserLine) {
-            await AiChat.updateSessionTitle(session.id, req.user.id, firstUserLine);
+        // 如果是新对话，使用大模型生成标题
+        if (session.title === '新对话') {
+            try {
+                console.log(`[AI] 为新对话生成标题，用户消息: "${content.slice(0, 50)}..."`);
+                const generatedTitle = await generateTitle(content);
+                await AiChat.updateSessionTitle(session.id, req.user.id, generatedTitle);
+                console.log(`[AI] 标题生成成功: "${generatedTitle}"`);
+            } catch (titleErr) {
+                console.error('[AI] 标题生成失败，使用默认标题:', titleErr.message);
+                // 如果标题生成失败，使用用户消息的第一行作为备选
+                const fallbackTitle = content.split('\n')[0].slice(0, 40) || '新对话';
+                await AiChat.updateSessionTitle(session.id, req.user.id, fallbackTitle);
+            }
         }
 
         res.json({

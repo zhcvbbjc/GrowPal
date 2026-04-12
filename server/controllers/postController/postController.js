@@ -1,4 +1,5 @@
 const Post = require('../../models/Post');
+const { summarizeArticle } = require('../../services/llmService');
 const fs = require('fs');
 const path = require('path');
 
@@ -20,6 +21,23 @@ exports.createPost = async (req, res) => {
         const image_path = req.file ? `/uploads/${req.file.filename}` : null;
 
         const postId = await Post.create({ user_id, content, title, tags, image_path });
+        
+        // 异步生成 AI 总结，不阻塞响应
+        (async () => {
+            try {
+                console.log(`[AI 总结] 开始为文章 ${postId} 生成总结...`);
+                const summary = await summarizeArticle(title, content);
+                if (summary) {
+                    await Post.updateAiSummary(postId, summary);
+                    console.log(`[AI 总结] 文章 ${postId} 总结生成成功: "${summary.slice(0, 50)}..."`);
+                } else {
+                    console.log(`[AI 总结] 文章 ${postId} 总结生成为空，跳过更新`);
+                }
+            } catch (err) {
+                console.error(`[AI 总结] 文章 ${postId} 总结生成失败:`, err.message);
+            }
+        })();
+        
         res.status(201).json({ message: '发布成功', postId });
     } catch (err) {
         console.error(err);

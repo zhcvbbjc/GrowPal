@@ -36,6 +36,11 @@ const Post = {
     delete: async (id) => {
         const sql = 'DELETE FROM posts WHERE post_id = ?';
         await pool.query(sql, [id]);
+    },
+
+    updateAiSummary: async (id, summary) => {
+        const sql = 'UPDATE posts SET ai_summary = ? WHERE post_id = ?';
+        await pool.query(sql, [summary, id]);
     }
 };
 

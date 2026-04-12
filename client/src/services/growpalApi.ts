@@ -8,6 +8,8 @@ export type PostRow = {
   user_id: number;
   title: string | null;
   content: string;
+  ai_summary: string | null;
+  cover_image: string | null;
   tags: string | null;
   image_path: string | null;
   username?: string;
@@ -21,8 +23,9 @@ export type QuestionRow = {
   user_id: number;
   title: string;
   content: string;
-  tags: string | null;
+  ai_answer: string | null;
   image_path: string | null;
+  tags: string | null;
   username?: string;
   avatar?: string | null;
   created_at?: string;
