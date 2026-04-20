@@ -21,7 +21,7 @@ exports.createPost = async (req, res) => {
         const image_path = req.file ? `/uploads/${req.file.filename}` : null;
 
         const postId = await Post.create({ user_id, content, title, tags, image_path });
-        
+
         // 异步生成 AI 总结，不阻塞响应
         (async () => {
             try {
@@ -37,7 +37,7 @@ exports.createPost = async (req, res) => {
                 console.error(`[AI 总结] 文章 ${postId} 总结生成失败:`, err.message);
             }
         })();
-        
+
         res.status(201).json({ message: '发布成功', postId });
     } catch (err) {
         console.error(err);
@@ -95,5 +95,16 @@ exports.deletePost = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: '删除失败', error: err.message });
+    }
+};
+
+exports.getUserPosts = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const results = await Post.findByUserId(userId);
+        res.status(200).json(results);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: '获取失败', error: err.message });
     }
 };

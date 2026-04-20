@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
     res.json({
         name: 'GrowPal API',
         ok: true,
-        routes: ['/api/auth', '/api/posts', '/api/questions', '/api/aichat', '/api/userchat']
+        routes: ['/api/auth', '/api/posts', '/api/questions', '/api/aichat', '/api/userchat', '/api/location']
     });
 });
 
@@ -31,6 +31,7 @@ app.use('/api/posts', require('./routes/posts'));
 app.use('/api/questions', require('./routes/question'));
 app.use('/api/aichat', require('./routes/aichat'));
 app.use('/api/userchat', require('./routes/userchat'));
+app.use('/api/location', require('./routes/location'));
 
 app.use((req, res) => {
     res.status(404).json({ message: '接口不存在' });

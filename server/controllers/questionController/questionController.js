@@ -100,3 +100,15 @@ exports.deleteQuestion = async (req, res) => {
         res.status(500).json({ message: '删除失败', error: err.message });
     }
 };
+
+
+exports.getUserQuestions = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const results = await Question.findByUserId(userId);
+        res.status(200).json(results);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: '获取失败失败', error: err.message });
+    }
+};

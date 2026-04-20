@@ -15,7 +15,9 @@ const Question = {
 
     findAll: async () => {
         const sql = `
-            SELECT q.*, u.username, u.avatar
+            SELECT q.*, u.username, u.avatar,
+                   (SELECT COUNT(*) FROM likes WHERE target_type = 'question' AND target_id = q.question_id) as like_count,
+                   (SELECT COUNT(*) FROM comments WHERE target_type = 'question' AND target_id = q.question_id) as comment_count
             FROM questions q
                      LEFT JOIN users u ON q.user_id = u.user_id
             ORDER BY q.created_at DESC`;
@@ -25,7 +27,9 @@ const Question = {
 
     findById: async (id) => {
         const sql = `
-            SELECT q.*, u.username, u.avatar
+            SELECT q.*, u.username, u.avatar,
+                   (SELECT COUNT(*) FROM likes WHERE target_type = 'question' AND target_id = q.question_id) as like_count,
+                   (SELECT COUNT(*) FROM comments WHERE target_type = 'question' AND target_id = q.question_id) as comment_count
             FROM questions q
                      LEFT JOIN users u ON q.user_id = u.user_id
             WHERE q.question_id = ?`;
@@ -41,6 +45,19 @@ const Question = {
     updateAiAnswer: async (id, answer) => {
         const sql = 'UPDATE questions SET ai_answer = ? WHERE question_id = ?';
         await pool.query(sql, [answer, id]);
+    },
+
+    findByUserId: async (userId) => {
+        const sql = `
+            SELECT q.*, u.username, u.avatar,
+                   (SELECT COUNT(*) FROM likes WHERE target_type = 'question' AND target_id = q.question_id) as like_count,
+                   (SELECT COUNT(*) FROM comments WHERE target_type = 'question' AND target_id = q.question_id) as comment_count
+            FROM questions q
+                     LEFT JOIN users u ON q.user_id = u.user_id
+            WHERE q.user_id = ?
+            ORDER BY q.created_at DESC`;
+        const [rows] = await pool.query(sql, [userId]);
+        return rows;
     }
 };
 

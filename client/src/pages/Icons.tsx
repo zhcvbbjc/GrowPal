@@ -50,7 +50,10 @@ import {
   Users as UsersIcon,
   Award,
   Trash2,
-  Trash2 as Delete
+  Trash2 as Delete,
+  Cloud,
+  Sun,
+  CloudRain
 } from 'lucide-react';
 
 export {
@@ -106,5 +109,9 @@ export {
   Award,
   Trash2,
   Trash2 as Delete,
-  Person as User
+  Person as User,
+  LocationOn as MapPin,
+  Cloud,
+  Sun,
+  CloudRain
 };

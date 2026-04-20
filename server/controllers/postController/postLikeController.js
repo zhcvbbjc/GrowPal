@@ -9,7 +9,7 @@ exports.toggleLike = async (req, res) => {
         const results = await Like.findByUserAndTarget(userId, postId, targetType);
 
         if (results.length > 0) {
-            await Like.delete(results[0].id);
+            await Like.delete(results[0].like_id);
             res.json({ message: '已取消点赞', liked: false });
         } else {
             await Like.create({ user_id: userId, target_id: postId, target_type: targetType });

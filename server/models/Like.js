@@ -14,7 +14,7 @@ const Like = {
     },
 
     delete: async (likeId) => {
-        await pool.query('DELETE FROM likes WHERE id = ?', [likeId]);
+        await pool.query('DELETE FROM likes WHERE like_id = ?', [likeId]);
     },
 
     countByTarget: async (targetId, targetType) => {

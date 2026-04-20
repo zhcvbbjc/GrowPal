@@ -11,6 +11,7 @@ router.post('/', authMiddleware, upload.single('image'), postController.createPo
 router.get('/', postController.getAllPosts);
 router.get('/:id', postController.getPostById);
 router.delete('/:id', authMiddleware, postController.deletePost);
+router.get('/my/posts', authMiddleware, postController.getUserPosts);
 
 router.post('/:id/comments', authMiddleware, postCommentController.createComment);
 router.get('/:id/comments', postCommentController.getComments);

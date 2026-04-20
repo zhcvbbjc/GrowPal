@@ -13,7 +13,7 @@ import {
   ChevronRight,
   Loader2,
 } from './Icons';
-import { fetchMe, getApiMessage } from '../services/growpalApi';
+import { fetchMe, getApiMessage, getCurrentLocationAndWeather, fetchMyPosts, fetchMyQuestions, type LocationData, type WeatherData, type WeatherCast, type PostRow, type QuestionRow } from '../services/growpalApi';
 
 interface ProfileScreenProps {
   onLogout: () => void;
@@ -25,6 +25,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
   const [nickname, setNickname] = useState('GrowPal 用户');
   const [avatar, setAvatar] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
+  const [location, setLocation] = useState<LocationData | null>(null);
+  const [myPosts, setMyPosts] = useState<PostRow[]>([]);
+  const [myQuestions, setMyQuestions] = useState<QuestionRow[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,7 +35,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
       setLoading(true);
       setErr(null);
       try {
-        const me = await fetchMe();
+        const [me, locationData] = await Promise.all([
+          fetchMe(),
+          getCurrentLocationAndWeather().catch(() => ({ success: false }))
+        ]);
         if (cancelled) return;
         setNickname(me.nickname);
         setAvatar(me.avatar);
@@ -42,6 +48,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
           nickname: me.nickname,
           avatar: me.avatar,
         }));
+        if (locationData.success && locationData.location) {
+          setLocation(locationData.location);
+        }
+
+        // 获取我的帖子和问题
+        const [posts, questions] = await Promise.all([
+          fetchMyPosts().catch(() => []),
+          fetchMyQuestions().catch(() => [])
+        ]);
+        if (!cancelled) {
+          setMyPosts(posts);
+          setMyQuestions(questions);
+        }
       } catch (e) {
         if (!cancelled) setErr(getApiMessage(e));
         try {
@@ -107,7 +126,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
             <div className="flex flex-wrap gap-3">
               <div className="bg-surface-container-lowest px-4 py-2 rounded-full flex items-center gap-2 border border-outline-variant/10">
                 <LocationOn className="text-primary w-4 h-4" />
-                <span className="text-sm font-medium">Field Network</span>
+                <span className="text-sm font-medium">{location ? location.city : '定位中...'}</span>
               </div>
               <div className="bg-surface-container-lowest px-4 py-2 rounded-full flex items-center gap-2 border border-outline-variant/10">
                 <Stars className="text-primary w-4 h-4" />
@@ -121,14 +140,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
         <div className="md:col-span-1 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/5 hover:bg-surface-container-low transition-colors duration-200">
           <Article className="text-primary w-6 h-6 mb-4" />
-          <div className="text-3xl font-bold font-headline mb-1">—</div>
+          <div className="text-3xl font-bold font-headline mb-1">{myPosts.length}</div>
           <div className="text-on-surface-variant text-sm font-semibold uppercase tracking-wider">
             动态
           </div>
         </div>
         <div className="md:col-span-1 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/5 hover:bg-surface-container-low transition-colors duration-200">
           <QuestionAnswer className="text-primary w-6 h-6 mb-4" />
-          <div className="text-3xl font-bold font-headline mb-1">—</div>
+          <div className="text-3xl font-bold font-headline mb-1">{myQuestions.length}</div>
           <div className="text-on-surface-variant text-sm font-semibold uppercase tracking-wider">
             问答
           </div>

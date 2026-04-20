@@ -232,10 +232,10 @@ export const CommunityScreen = () => {
                   )}
                   <div className="p-4 flex items-center gap-6 border-t border-surface-container pointer-events-none">
                     <span className="flex items-center gap-1.5 text-on-surface-variant text-xs font-bold">
-                      <Favorite className="w-4 h-4" /> 点赞
+                      <Favorite className="w-4 h-4" /> {post.like_count || 0}
                     </span>
                     <span className="flex items-center gap-1.5 text-on-surface-variant text-xs font-bold">
-                      <ChatBubble className="w-4 h-4" /> 评论
+                      <ChatBubble className="w-4 h-4" /> {post.comment_count || 0}
                     </span>
                   </div>
                 </button>
@@ -298,6 +298,14 @@ export const CommunityScreen = () => {
                       />
                     </div>
                   )}
+                  <div className="mt-4 flex items-center gap-6 pointer-events-none">
+                    <span className="flex items-center gap-1.5 text-on-surface-variant text-xs font-bold">
+                      <Favorite className="w-4 h-4" /> {q.like_count || 0}
+                    </span>
+                    <span className="flex items-center gap-1.5 text-on-surface-variant text-xs font-bold">
+                      <ChatBubble className="w-4 h-4" /> {q.comment_count || 0}
+                    </span>
+                  </div>
                 </button>
               ))
             )}

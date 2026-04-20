@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Users, UsersIcon, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote, Chat } from './Icons';
+import { Search, Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Users, UsersIcon, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote, Chat, MapPin, Cloud, Sun, CloudRain } from './Icons';
 import { cn } from '../lib/utils';
-import { fetchPosts, fetchQuestions, getApiMessage, type PostRow, type QuestionRow } from '../services/growpalApi';
+import { fetchPosts, fetchQuestions, getApiMessage, getCurrentLocationAndWeather, type PostRow, type QuestionRow, type LocationData, type WeatherData, type WeatherCast } from '../services/growpalApi';
 import { useToast } from '../components/Toast';
 
 export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }) => {
@@ -10,6 +10,8 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
   const [recentPosts, setRecentPosts] = useState<PostRow[]>([]);
   const [recentQuestions, setRecentQuestions] = useState<QuestionRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [location, setLocation] = useState<LocationData | null>(null);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,11 +28,22 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
         }
       } catch (e) {
         if (!cancelled) {
-          console.error('Failed to load home data:', getApiMessage(e));
+          console.error('Failed to load posts and questions:', getApiMessage(e));
         }
-      } finally {
-        if (!cancelled) setLoading(false);
       }
+
+      // 单独加载定位和天气，失败不影响主内容
+      try {
+        const locationData = await getCurrentLocationAndWeather();
+        if (!cancelled && locationData.success) {
+          setLocation(locationData.location);
+          setWeather(locationData.weather);
+        }
+      } catch (e) {
+        console.error('Failed to load location and weather:', getApiMessage(e));
+      }
+
+      if (!cancelled) setLoading(false);
     };
     loadData();
     return () => { cancelled = true; };
@@ -74,6 +87,41 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
           />
         </form>
       </section>
+
+      {/* Location and Weather */}
+      {(location || weather) && (
+        <section className="mb-4">
+          <div className="bg-white rounded-2xl p-4 border border-outline-variant/10 shadow-sm">
+            <div className="flex items-center justify-between">
+              {location && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-on-surface">
+                    {location.city || location.province}
+                  </span>
+                </div>
+              )}
+              {weather && weather.casts && weather.casts.length > 0 && (
+                <div className="flex items-center gap-2">
+                  {weather.casts[0].dayweather.includes('晴') ? (
+                    <Sun className="w-4 h-4 text-orange-500" />
+                  ) : weather.casts[0].dayweather.includes('雨') ? (
+                    <CloudRain className="w-4 h-4 text-blue-500" />
+                  ) : (
+                    <Cloud className="w-4 h-4 text-gray-500" />
+                  )}
+                  <span className="text-sm font-medium text-on-surface">
+                    {weather.casts[0].daytemp}°C
+                  </span>
+                  <span className="text-xs text-on-surface-variant">
+                    {weather.casts[0].dayweather}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* AI Hero Card */}
       <section className="mb-8">
@@ -200,11 +248,11 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
                         <div className="flex items-center gap-4 text-on-surface-variant/60">
                           <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
                             <Favorite className="w-4 h-4" />
-                            <span className="text-xs font-semibold">点赞</span>
+                            <span className="text-xs font-semibold">{post.like_count || 0}</span>
                           </button>
                           <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
                             <ChatBubble className="w-4 h-4" />
-                            <span className="text-xs font-semibold">评论</span>
+                            <span className="text-xs font-semibold">{post.comment_count || 0}</span>
                           </button>
                         </div>
                       </div>
@@ -245,6 +293,16 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
                     <p className="text-sm text-on-surface-variant line-clamp-2 leading-relaxed">
                       {q.content}
                     </p>
+                    <div className="flex items-center gap-4 mt-3 text-on-surface-variant/60">
+                      <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
+                        <Favorite className="w-4 h-4" />
+                        <span className="text-xs font-semibold">{q.like_count || 0}</span>
+                      </button>
+                      <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
+                        <ChatBubble className="w-4 h-4" />
+                        <span className="text-xs font-semibold">{q.comment_count || 0}</span>
+                      </button>
+                    </div>
                   </article>
                 ))}
               </>

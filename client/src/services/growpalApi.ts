@@ -15,6 +15,8 @@ export type PostRow = {
   username?: string;
   avatar?: string | null;
   created_at?: string;
+  like_count?: number;
+  comment_count?: number;
 };
 
 export type QuestionRow = {
@@ -29,6 +31,8 @@ export type QuestionRow = {
   username?: string;
   avatar?: string | null;
   created_at?: string;
+  like_count?: number;
+  comment_count?: number;
 };
 
 export type CommentRow = {
@@ -57,6 +61,16 @@ export async function fetchQuestions() {
 
 export async function fetchQuestion(id: number) {
   const { data } = await http.get<QuestionRow>(`/questions/${id}`);
+  return data;
+}
+
+export async function fetchMyPosts() {
+  const { data } = await http.get<PostRow[]>('/posts/my/posts');
+  return data;
+}
+
+export async function fetchMyQuestions() {
+  const { data } = await http.get<QuestionRow[]>('/questions/my/questions');
   return data;
 }
 
@@ -235,5 +249,56 @@ export async function createQuestion(title: string, content: string, image?: Fil
   const { data } = await http.post<{ id: number }>('/questions', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+  return data;
+}
+
+/** 定位和天气 */
+export type LocationData = {
+  province: string;
+  city: string;
+  adcode: string;
+};
+
+export type WeatherCast = {
+  date: string;
+  dayweather: string;
+  nightweather: string;
+  daytemp: string;
+  nighttemp: string;
+  daywind: string;
+  nightwind: string;
+  week: string;
+};
+
+export type WeatherData = {
+  city: string;
+  adcode: string;
+  province: string;
+  reporttime: string;
+  casts: WeatherCast[];
+};
+
+export async function getCurrentLocationAndWeather() {
+  const { data } = await http.get<{
+    success: boolean;
+    location: LocationData;
+    weather: WeatherData;
+  }>('/location/current');
+  return data;
+}
+
+export async function getLocation() {
+  const { data } = await http.get<{
+    success: boolean;
+    data: LocationData & { rectangle?: string };
+  }>('/location/location');
+  return data;
+}
+
+export async function getWeather(adcode: string, extensions: 'all' | 'base' = 'all') {
+  const { data } = await http.get<{
+    success: boolean;
+    data: WeatherData;
+  }>(`/location/weather/${adcode}`, { params: { extensions } });
   return data;
 }

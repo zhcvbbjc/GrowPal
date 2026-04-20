@@ -15,7 +15,9 @@ const Post = {
 
     findAll: async () => {
         const sql = `
-            SELECT p.*, u.username, u.avatar
+            SELECT p.*, u.username, u.avatar,
+                   (SELECT COUNT(*) FROM likes WHERE target_type = 'post' AND target_id = p.post_id) as like_count,
+                   (SELECT COUNT(*) FROM comments WHERE target_type = 'post' AND target_id = p.post_id) as comment_count
             FROM posts p
                      LEFT JOIN users u ON p.user_id = u.user_id
             ORDER BY p.created_at DESC`;
@@ -25,7 +27,9 @@ const Post = {
 
     findById: async (id) => {
         const sql = `
-            SELECT p.*, u.username, u.avatar
+            SELECT p.*, u.username, u.avatar,
+                   (SELECT COUNT(*) FROM likes WHERE target_type = 'post' AND target_id = p.post_id) as like_count,
+                   (SELECT COUNT(*) FROM comments WHERE target_type = 'post' AND target_id = p.post_id) as comment_count
             FROM posts p
                      LEFT JOIN users u ON p.user_id = u.user_id
             WHERE p.post_id = ?`;
@@ -41,6 +45,19 @@ const Post = {
     updateAiSummary: async (id, summary) => {
         const sql = 'UPDATE posts SET ai_summary = ? WHERE post_id = ?';
         await pool.query(sql, [summary, id]);
+    },
+
+    findByUserId: async (userId) => {
+        const sql = `
+            SELECT p.*, u.username, u.avatar,
+                   (SELECT COUNT(*) FROM likes WHERE target_type = 'post' AND target_id = p.post_id) as like_count,
+                   (SELECT COUNT(*) FROM comments WHERE target_type = 'post' AND target_id = p.post_id) as comment_count
+            FROM posts p
+                     LEFT JOIN users u ON p.user_id = u.user_id
+            WHERE p.user_id = ?
+            ORDER BY p.created_at DESC`;
+        const [rows] = await pool.query(sql, [userId]);
+        return rows;
     }
 };
 
