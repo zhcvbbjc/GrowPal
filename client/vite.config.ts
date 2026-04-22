@@ -23,10 +23,14 @@ export default defineConfig(({mode}) => {
         '/api': {
           target: 'http://localhost:5000',
           changeOrigin: true,
+          timeout: 60000,
+          proxyTimeout: 60000,
         },
         '/uploads': {
           target: 'http://localhost:5000',
           changeOrigin: true,
+          timeout: 60000,
+          proxyTimeout: 60000,
         },
       },
     },

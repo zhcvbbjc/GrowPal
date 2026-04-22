@@ -25,7 +25,7 @@ const locationApi = {
         ip: finalIP || ''
       };
       console.log('[定位] 请求IP:', finalIP);
-      const res = await axios.get(url, { params });
+      const res = await axios.get(url, { params, timeout: 10000 });
       console.log('[定位] 响应:', JSON.stringify(res.data));
 
       if (res.data.status === 0) {
@@ -66,7 +66,7 @@ const locationApi = {
         get_md: 1
       };
       console.log('[天气] 请求参数:', params);
-      const res = await axios.get(url, { params });
+      const res = await axios.get(url, { params, timeout: 15000 });
       console.log('[天气] 响应:', JSON.stringify(res.data));
 
       if (res.data.status === 0) {
