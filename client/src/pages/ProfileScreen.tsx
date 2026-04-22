@@ -12,14 +12,21 @@ import {
   Logout,
   ChevronRight,
   Loader2,
+  SunIcon,
+  Moon,
+  Palette,
+  CheckCircle2,
 } from './Icons';
 import { fetchMe, getApiMessage, getCurrentLocationAndWeather, fetchMyPosts, fetchMyQuestions, type LocationData, type WeatherData, type WeatherCast, type PostRow, type QuestionRow } from '../services/growpalApi';
+import { useTheme, type Theme } from '../contexts/ThemeContext';
+import { cn } from '../lib/utils';
 
 interface ProfileScreenProps {
   onLogout: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
+  const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [nickname, setNickname] = useState('GrowPal 用户');
@@ -28,6 +35,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [myPosts, setMyPosts] = useState<PostRow[]>([]);
   const [myQuestions, setMyQuestions] = useState<QuestionRow[]>([]);
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,7 +45,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
       try {
         const [me, locationData] = await Promise.all([
           fetchMe(),
-          getCurrentLocationAndWeather().catch(() => ({ success: false }))
+          getCurrentLocationAndWeather().catch(() => ({ success: false, location: null, weather: null }))
         ]);
         if (cancelled) return;
         setNickname(me.nickname);
@@ -48,11 +56,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
           nickname: me.nickname,
           avatar: me.avatar,
         }));
+
         if (locationData.success && locationData.location) {
           setLocation(locationData.location);
         }
 
-        // 获取我的帖子和问题
         const [posts, questions] = await Promise.all([
           fetchMyPosts().catch(() => []),
           fetchMyQuestions().catch(() => [])
@@ -85,6 +93,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
   const avatarSrc =
     avatar ||
     `https://picsum.photos/seed/${encodeURIComponent(nickname)}/400/400`;
+
+  const themeOptions = [
+    { value: 'light' as Theme, label: '浅色', desc: '清新明亮', icon: '☀️' },
+    { value: 'dark' as Theme, label: '深色', desc: '夜间模式', icon: '🌙' },
+    { value: 'neutral' as Theme, label: '中性', desc: '简洁优雅', icon: '⚪' },
+  ];
 
   return (
     <div className="animate-in fade-in duration-500">
@@ -169,10 +183,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
         </div>
       </div>
 
-      <div className="bg-surface-container-low rounded-3xl p-2">
+      <div className="bg-surface-container rounded-3xl p-2 mb-8">
         <div className="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm">
           <div className="p-6 border-b border-surface-container">
-            <h3 className="font-headline font-bold text-xl text-on-surface">账号</h3>
+            <h3 className="font-headline font-bold text-xl text-on-surface mb-4 flex items-center gap-2">
+              <Settings className="w-5 h-5 text-primary" />
+              主题设置
+            </h3>
           </div>
           <div className="divide-y divide-surface-container">
             {[
@@ -191,11 +208,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
                 title: '安全',
                 desc: 'JWT 登录态存储在本地',
               },
-              {
-                icon: Settings,
-                title: '应用',
-                desc: '语言与主题',
-              },
             ].map((item, i) => (
               <div
                 key={i}
@@ -213,6 +225,64 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
                 <ChevronRight className="text-outline-variant group-hover:text-primary transition-colors w-6 h-6" />
               </div>
             ))}
+
+            {/* 主题选择器 */}
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary-fixed/20 rounded-xl flex items-center justify-center text-primary">
+                    <Palette className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-on-surface">应用主题</h4>
+                    <p className="text-sm text-on-surface-variant">
+                      {themeOptions.find((t) => t.value === theme)?.desc}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowThemeSelector(!showThemeSelector)}
+                  className={cn(
+                    'w-10 h-10 rounded-full border border-outline-variant/30 flex items-center justify-center transition-all',
+                    showThemeSelector ? 'bg-primary text-on-primary border-primary' : 'hover:bg-surface-container-low'
+                  )}
+                >
+                  {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                </button>
+              </div>
+
+              {/* 主题选项 */}
+              {showThemeSelector && (
+                <div className="grid grid-cols-3 gap-3 animate-in slide-in-from-top-2 duration-200">
+                  {themeOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setTheme(option.value);
+                        setShowThemeSelector(false);
+                      }}
+                      className={cn(
+                        'p-4 rounded-xl border transition-all hover:scale-105 hover:-translate-y-1',
+                        theme === option.value
+                          ? 'bg-primary text-on-primary border-primary shadow-lg ring-2 ring-primary/50'
+                          : 'bg-surface-container-low border-outline-variant/30 hover:border-outline-variant/60'
+                      )}
+                    >
+                      <div className="text-3xl mb-2">{option.icon}</div>
+                      <div>
+                        <div className="font-bold text-on-surface">{option.label}</div>
+                        <div className="text-xs text-on-surface-variant">{option.desc}</div>
+                      </div>
+                      {theme === option.value && (
+                        <div className="mt-2 flex justify-center">
+                          <CheckCircle2 className="w-5 h-5 text-primary" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

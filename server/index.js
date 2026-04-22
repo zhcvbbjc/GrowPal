@@ -9,6 +9,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// 初始化搜索服务（在后台）
+const searchService = require('./utils/search');
+setTimeout(() => {
+    searchService.initializeIndexes().then(() => {
+        searchService.syncAll();
+    }).catch(err => {
+        console.log('[搜索] 初始化跳过或失败:', err.message);
+    });
+}, 2000);
+
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -22,7 +32,7 @@ app.get('/', (req, res) => {
     res.json({
         name: 'GrowPal API',
         ok: true,
-        routes: ['/api/auth', '/api/posts', '/api/questions', '/api/aichat', '/api/userchat', '/api/location']
+        routes: ['/api/auth', '/api/posts', '/api/questions', '/api/aichat', '/api/userchat', '/api/location', '/api/search']
     });
 });
 
@@ -32,6 +42,7 @@ app.use('/api/questions', require('./routes/question'));
 app.use('/api/aichat', require('./routes/aichat'));
 app.use('/api/userchat', require('./routes/userchat'));
 app.use('/api/location', require('./routes/location'));
+app.use('/api/search', require('./routes/search'));
 
 app.use((req, res) => {
     res.status(404).json({ message: '接口不存在' });

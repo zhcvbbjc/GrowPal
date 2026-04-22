@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Mic, AddCircle, Psychology, AutoAwesome, ArrowBack, Loader2, Trash2 } from './Icons';
+import { Send, Mic, AddCircle, Psychology, AutoAwesome, ArrowBack, Loader2, Trash2, X } from './Icons';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
 import {

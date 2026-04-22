@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Users, UsersIcon, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote, Chat, MapPin, Cloud, Sun, CloudRain } from './Icons';
+import { Search, Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Groups, UsersIcon, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote, Chat, MapPin, Cloud, SunIcon, CloudRain } from './Icons';
 import { cn } from '../lib/utils';
 import { fetchPosts, fetchQuestions, getApiMessage, getCurrentLocationAndWeather, type PostRow, type QuestionRow, type LocationData, type WeatherData, type WeatherCast } from '../services/growpalApi';
 import { useToast } from '../components/Toast';
+import { type NavigateFunction } from '../types';
 
-export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }) => {
+export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => {
   const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [recentPosts, setRecentPosts] = useState<PostRow[]>([]);
@@ -51,10 +52,7 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      toast.info(`搜索: ${searchQuery}`);
-      onNavigate('community');
-    }
+    onNavigate(searchQuery.trim() ? { screen: 'search', query: searchQuery.trim() } : 'search');
   };
 
   const stats = [
@@ -64,10 +62,10 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
   ];
 
   const quickActions = [
-    { icon: Psychology, label: 'AI 问答', color: 'from-primary to-primary-container', screen: 'chat' },
-    { icon: EditSquare, label: '发动态', color: 'from-blue-500 to-blue-600', screen: 'community' },
-    { icon: MessageSquareQuote, label: '提问题', color: 'from-purple-500 to-purple-600', screen: 'community' },
-    { icon: Chat, label: '私信', color: 'from-orange-500 to-orange-600', screen: 'messages' },
+    { icon: Psychology, label: 'AI 问答', color: 'from-primary to-primary-container', screen: 'chat' as const },
+    { icon: EditSquare, label: '发动态', color: 'from-blue-500 to-blue-600', screen: 'community' as const },
+    { icon: MessageSquareQuote, label: '提问题', color: 'from-purple-500 to-purple-600', screen: 'community' as const },
+    { icon: Chat, label: '私信', color: 'from-orange-500 to-orange-600', screen: 'messages' as const },
   ];
 
   return (
@@ -104,7 +102,7 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
               {weather && weather.casts && weather.casts.length > 0 && (
                 <div className="flex items-center gap-2">
                   {weather.casts[0].dayweather.includes('晴') ? (
-                    <Sun className="w-4 h-4 text-orange-500" />
+                    <SunIcon className="w-4 h-4 text-orange-500" />
                   ) : weather.casts[0].dayweather.includes('雨') ? (
                     <CloudRain className="w-4 h-4 text-blue-500" />
                   ) : (
@@ -129,7 +127,7 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: (screen: any) => void }
              onClick={() => onNavigate('chat')}>
           <div className="absolute top-0 right-0 -mr-12 -mt-12 w-64 h-64 bg-primary-container/30 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
           <div className="absolute bottom-0 left-0 -ml-12 -mb-12 w-48 h-48 bg-primary-fixed/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
-          
+
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-4">
               <div className="glass-ai px-3 py-1.5 rounded-full flex items-center gap-2">

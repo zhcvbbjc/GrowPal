@@ -302,3 +302,50 @@ export async function getWeather(adcode: string, extensions: 'all' | 'base' = 'a
   }>(`/location/weather/${adcode}`, { params: { extensions } });
   return data;
 }
+
+/** 搜索相关类型 */
+export type SearchResult = {
+  id: number;
+  type: 'post' | 'question';
+  title: string | null;
+  content: string;
+  tags: string[];
+  cover_image: string | null;
+  created_at: string;
+  user: {
+    user_id: number;
+    username: string;
+    avatar: string | null;
+    bio: string | null;
+  } | null;
+};
+
+export type SearchUser = {
+  id: number;
+  user_id: number;
+  username: string;
+  bio: string | null;
+  avatar: string | null;
+  role: string | null;
+};
+
+export type SearchResults = {
+  users: SearchUser[];
+  postsByTitle: SearchResult[];
+  postsByContent: SearchResult[];
+  questionsByTitle: SearchResult[];
+  questionsByContent: SearchResult[];
+};
+
+export type SearchResponse = {
+  success: boolean;
+  results: SearchResults;
+  hasResults: boolean;
+};
+
+export async function search(keyword: string) {
+  const { data } = await http.get<SearchResponse>('/search', {
+    params: { q: keyword },
+  });
+  return data;
+}
