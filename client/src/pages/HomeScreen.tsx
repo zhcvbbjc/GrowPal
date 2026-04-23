@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Groups, UsersIcon, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote, Chat, MapPin, Cloud, SunIcon, CloudRain } from './Icons';
+import { Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Groups, UsersIcon, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote, Chat, MapPin, Cloud, SunIcon, CloudRain } from './Icons';
 import { cn } from '../lib/utils';
 import { fetchPosts, fetchQuestions, getApiMessage, getCurrentLocationAndWeather, type PostRow, type QuestionRow, type LocationData, type WeatherData, type WeatherCast } from '../services/growpalApi';
 import { useToast } from '../components/Toast';
@@ -7,7 +7,6 @@ import { type NavigateFunction } from '../types';
 
 export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => {
   const toast = useToast();
-  const [searchQuery, setSearchQuery] = useState('');
   const [recentPosts, setRecentPosts] = useState<PostRow[]>([]);
   const [recentQuestions, setRecentQuestions] = useState<QuestionRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,11 +49,6 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => 
     return () => { cancelled = true; };
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    onNavigate(searchQuery.trim() ? { screen: 'search', query: searchQuery.trim() } : 'search');
-  };
-
   const stats = [
     { icon: TrendingUp, label: '今日动态', value: '128', color: 'text-green-600' },
     { icon: UsersIcon, label: '活跃用户', value: '1,024', color: 'text-blue-600' },
@@ -70,22 +64,6 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => 
 
   return (
     <div className="animate-in fade-in duration-500 space-y-8">
-      {/* Search Section */}
-      <section className="mt-2 mb-6">
-        <form onSubmit={handleSearch} className="relative group">
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search className="text-on-surface-variant/60 w-5 h-5" />
-          </div>
-          <input
-            className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all placeholder:text-on-surface-variant/40 text-on-surface font-medium"
-            placeholder="搜索 crops, pests, soil data..."
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </form>
-      </section>
-
       {/* Location and Weather */}
       {(location || weather) && (
         <section className="mb-4">

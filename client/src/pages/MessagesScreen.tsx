@@ -398,18 +398,6 @@ export const MessagesScreen = () => {
           ))
         )}
       </div>
-
-      <button
-        type="button"
-        onClick={() => {
-          const el = document.querySelector<HTMLInputElement>('input[placeholder="搜索用户以发起聊天…"]');
-          el?.focus();
-        }}
-        className="fixed bottom-28 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-2xl shadow-xl z-50 flex items-center justify-center hover:scale-105 transition-transform active:scale-95 editorial-shadow"
-        aria-label="new message"
-      >
-        <EditSquare className="w-6 h-6" />
-      </button>
     </div>
   );
 };

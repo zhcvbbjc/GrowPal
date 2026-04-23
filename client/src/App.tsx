@@ -7,6 +7,7 @@ import { MessagesScreen } from './pages/MessagesScreen';
 import { ProfileScreen } from './pages/ProfileScreen';
 import { SettingsScreen } from './pages/SettingsScreen';
 import { SearchScreen } from './pages/SearchScreen';
+import { SearchRecommendScreen } from './pages/SearchRecommendScreen';
 import LoginPage from './pages/LoginPage';
 import { cn } from './lib/utils';
 import { Screen } from './types';
@@ -116,6 +117,8 @@ function AppContent() {
                 return <CommunityScreen />;
             case 'LoginPage':
                 return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+            case 'searchRecommend':
+                return <SearchRecommendScreen onNavigate={handleScreenChange} />;
             case 'search':
                 return <SearchScreen onNavigate={handleScreenChange} initialQuery={searchQuery} />;
             case 'chat':
@@ -166,21 +169,29 @@ function AppContent() {
         }
     }, [isLoggedIn, currentScreen]);
 
+    const shouldShowHeader = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search';
+    const shouldShowBottomNav = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search';
+
     return (
         <div className="min-h-screen bg-surface flex flex-col">
-            {currentScreen !== 'LoginPage' && (
-                <Header isLoggedIn={!!headerUser} onNavigate={setCurrentScreen} />
+            {shouldShowHeader && (
+                <Header isLoggedIn={!!headerUser} onNavigate={setCurrentScreen} onLogout={handleLogout} />
             )}
 
             {currentScreen === 'LoginPage' && (
                 <Header isLoggedIn={false} onNavigate={setCurrentScreen} />
             )}
 
-            <main className="flex-1 max-w-4xl mx-auto w-full px-4 pt-6 pb-32">
+            <main className={cn(
+                'flex-1 max-w-4xl mx-auto w-full px-4',
+                shouldShowBottomNav ? 'pt-6 pb-32' : 'pt-6 pb-6'
+            )}>
                 <ErrorBoundary>{renderScreen()}</ErrorBoundary>
             </main>
 
-            <BottomNav currentScreen={currentScreen} onNavigate={handleNavClick} />
+            {shouldShowBottomNav && (
+                <BottomNav currentScreen={currentScreen} onNavigate={handleNavClick} />
+            )}
         </div>
     );
 }

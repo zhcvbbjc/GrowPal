@@ -31,7 +31,7 @@ interface SearchScreenProps {
   initialQuery?: string;
 }
 
-type SearchMode = 'all' | 'title' | 'content';
+type SearchMode = 'title' | 'content';
 
 export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQuery = '' }) => {
   const [query, setQuery] = useState(initialQuery);
@@ -41,7 +41,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
   const [recentPosts, setRecentPosts] = useState<PostRow[]>([]);
   const [recentQuestions, setRecentQuestions] = useState<QuestionRow[]>([]);
   const [loadingFallback, setLoadingFallback] = useState(false);
-  const [searchMode, setSearchMode] = useState<SearchMode>('all');
+  const [searchMode, setSearchMode] = useState<SearchMode>('title');
   const [showModeSelector, setShowModeSelector] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
@@ -50,6 +50,13 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
       handleSearch();
     }
   }, []);
+
+  // 当搜索模式改变时，如果已经搜索过，自动重新搜索
+  useEffect(() => {
+    if (hasSearched && query.trim()) {
+      handleSearchWithMode(query.trim(), searchMode);
+    }
+  }, [searchMode]);
 
   useEffect(() => {
     if (!hasSearched || (searchResults && !searchResults.hasResults)) {
@@ -94,6 +101,20 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
     }
   };
 
+  const handleSearchWithMode = async (searchQuery: string, mode: SearchMode) => {
+    setLoading(true);
+    try {
+      const results = await search(searchQuery);
+      setSearchResults(results);
+      console.log('搜索结果:', results);
+    } catch (error) {
+      console.error('搜索失败:', error);
+      setSearchResults(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -121,49 +142,6 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
     } else if (searchMode === 'content') {
       results.results.postsByTitle = [];
       results.results.questionsByTitle = [];
-    }
-
-    // 在"全部"模式下，去掉重复项（同一 ID 在标题和内容中都出现时，只保留一份）
-    if (searchMode === 'all') {
-      const seenPosts = new Set<number>();
-      const seenQuestions = new Set<number>();
-
-      // 先处理标题匹配的，记录已见过的 ID
-      results.results.postsByTitle.forEach((item) => seenPosts.add(item.id));
-      results.results.questionsByTitle.forEach((item) => seenQuestions.add(item.id));
-
-      console.log('[前端] 标题匹配的帖子 ID:', Array.from(seenPosts));
-      console.log('[前端] 标题匹配的问题 ID:', Array.from(seenQuestions));
-
-      // 过滤内容匹配的，去掉重复
-      results.results.postsByContent = results.results.postsByContent.filter((item) => {
-        if (seenPosts.has(item.id)) {
-          seenPosts.delete(item.id); // 如果在标题中已出现，从标题中删除，保留内容版本（内容更重要）
-          return true;
-        }
-        return true;
-      });
-      results.results.questionsByContent = results.results.questionsByContent.filter((item) => {
-        if (seenQuestions.has(item.id)) {
-          seenQuestions.delete(item.id);
-          return true;
-        }
-        return true;
-      });
-
-      // 重新添加被删除的标题匹配项，确保它们被显示
-      seenPosts.forEach((id) => {
-        const item = searchResults.results.postsByTitle.find((p) => p.id === id);
-        if (item) {
-          results.results.postsByContent.unshift(item);
-        }
-      });
-      seenQuestions.forEach((id) => {
-        const item = searchResults.results.questionsByTitle.find((q) => q.id === id);
-        if (item) {
-          results.results.questionsByContent.unshift(item);
-        }
-      });
     }
 
     console.log('[前端] 过滤后的结果:', results);
@@ -280,18 +258,17 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
   const showFallback = !hasSearched || (searchResults && !hasAnyResults);
 
   const modeOptions = [
-    { value: 'all' as SearchMode, label: '全部', icon: '∀' },
     { value: 'title' as SearchMode, label: '标题', icon: 'T' },
     { value: 'content' as SearchMode, label: '内容', icon: 'C' },
   ];
 
   return (
-    <div className="animate-in fade-in duration-300 min-h-screen bg-gradient-to-br from-surface via-surface-container/30 to-surface-container/60 pb-8">
+    <div className="animate-in fade-in duration-300 min-h-screen bg-gradient-to-br from-surface via-surface-container/30 to-surface-container/60 pb-8 w-full">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-surface/90 backdrop-blur-lg border-b border-outline-variant/10 px-4 py-4 mb-4">
-        <div className="flex items-center gap-3 max-w-2xl mx-auto">
+        <div className="flex items-center gap-3 w-full">
           <button
-            onClick={() => onNavigate('home')}
+            onClick={() => onNavigate('searchRecommend')}
             className="p-2 hover:bg-surface-container-high rounded-full transition-colors"
           >
             <ArrowLeft className="w-6 h-6 text-on-surface" />
@@ -303,7 +280,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
         </div>
       </div>
 
-      <div className="px-4 max-w-2xl mx-auto">
+      <div className="w-full">
         {/* Search Input */}
         <form onSubmit={handleSearch} className="relative mb-4">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">

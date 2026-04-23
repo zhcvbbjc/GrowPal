@@ -9,6 +9,7 @@ import {
   X,
   User,
   Calendar,
+  Plus,
 } from './Icons';
 import { cn } from '../lib/utils';
 import {
@@ -323,6 +324,22 @@ export const CommunityScreen = () => {
           onPublish={handlePublish}
         />
       )}
+
+      {/* 画笔按钮 - 发布内容 */}
+      <button
+        type="button"
+        onClick={() => {
+          if (!isLoggedIn) {
+            toast.error('请先登录后再发布内容');
+            return;
+          }
+          setShowPublishModal(true);
+        }}
+        className="fixed bottom-24 right-4 md:right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-2xl shadow-xl z-50 flex items-center justify-center hover:scale-105 transition-transform active:scale-95 editorial-shadow"
+        aria-label="create post"
+      >
+        <Plus className="w-7 h-7" />
+      </button>
     </div>
   );
 };
@@ -386,8 +403,8 @@ const PublishModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50">
-      <div className="bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-outline-variant/10 px-4 py-3 flex items-center justify-between rounded-t-2xl">
+      <div className="bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-lg max-h-[85vh] overflow-y-auto pb-20">
+        <div className="sticky top-0 bg-white border-b border-outline-variant/10 px-4 py-3 flex items-center justify-between rounded-t-2xl z-10">
           <h3 className="text-lg font-bold text-on-surface">
             {type === 'posts' ? '发布动态' : '提问题'}
           </h3>
@@ -422,8 +439,8 @@ const PublishModal = ({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={type === 'posts' ? '分享你的想法...' : '详细描述你的问题...'}
-              className="w-full px-4 py-3 border border-outline-variant/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
-              rows={6}
+              className="w-full px-4 py-3 border border-outline-variant/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none custom-textarea-scroll"
+              rows={3}
             />
           </div>
 

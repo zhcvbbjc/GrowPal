@@ -203,3 +203,54 @@
 .no-scrollbar::-webkit-scrollbar {
 	display: none;
 }
+
+/* 自定义滚动条 - 默认细，hover 变粗 */
+.scrollbar-thin::-webkit-scrollbar {
+	width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+	background: transparent;
+	border-radius: 999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 999px;
+	transition: width 0.2s ease, background 0.2s ease;
+}
+
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.4);
+}
+
+/* Firefox 滚动条 */
+.scrollbar-thin {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* textarea 自定义滚动条 */
+.custom-textarea-scroll::-webkit-scrollbar {
+	width: 6px;
+}
+
+.custom-textarea-scroll::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.custom-textarea-scroll::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.15);
+	border-radius: 999px;
+	transition: all 0.2s ease;
+}
+
+.custom-textarea-scroll:hover::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.4);
+	width: 8px;
+}
+
+.custom-textarea-scroll {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
