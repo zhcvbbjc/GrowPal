@@ -395,8 +395,28 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
           <div className="animate-in slide-in-from-bottom-4 duration-300">
             {hasAnyResults ? (
               <>
-                {renderSection('用户', { Icon: UserIcon, color: 'bg-gradient-to-br from-blue-500 to-blue-600' }, filteredResults.results.users, renderUserItem)}
+                {/* 优先显示用户搜索结果 */}
+                {filteredResults.results.users.length > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-xl">
+                        <UserIcon className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-on-surface">用户</h3>
+                        <span className="text-xs text-on-surface-variant/60">找到 {filteredResults.results.users.length} 个用户</span>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {filteredResults.results.users.map(renderUserItem)}
+                    </div>
+                  </div>
+                )}
+                
+                {/* 动态搜索结果 */}
                 {renderSection('动态', { Icon: FileText, color: 'bg-gradient-to-br from-green-500 to-green-600' }, [...filteredResults.results.postsByTitle, ...filteredResults.results.postsByContent], renderSearchResultItem)}
+                
+                {/* 问答搜索结果 */}
                 {renderSection('问答', { Icon: MessageSquare, color: 'bg-gradient-to-br from-purple-500 to-purple-600' }, [...filteredResults.results.questionsByTitle, ...filteredResults.results.questionsByContent], renderSearchResultItem)}
               </>
             ) : (

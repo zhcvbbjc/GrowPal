@@ -207,8 +207,14 @@ const searchService = {
     try {
       console.log(`[搜索] 开始综合搜索，关键词: ${keyword}`);
 
-      const [users, postsByTitle, postsByContent, questionsByTitle, questionsByContent] = await Promise.all([
-        this.searchUsers(keyword),
+      // 第一步：先搜索用户
+      console.log('[搜索] 第一步：搜索用户...');
+      const users = await this.searchUsers(keyword);
+      console.log(`[搜索] 用户搜索完成，找到 ${users.hits.length} 个用户`);
+
+      // 第二步：搜索标题和内容
+      console.log('[搜索] 第二步：搜索标题和内容...');
+      const [postsByTitle, postsByContent, questionsByTitle, questionsByContent] = await Promise.all([
         this.searchPostsByTitle(keyword),
         this.searchPostsByContent(keyword),
         this.searchQuestionsByTitle(keyword),
