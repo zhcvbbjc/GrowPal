@@ -7,7 +7,7 @@ import {
   Bookmark,
   Sparkles,
   ArrowLeft,
-  User as PersonIcon,
+  User as UserIcon,
   Users,
   Home,
   Share,
@@ -56,6 +56,10 @@ import {
   Leaf,
   MessageSquare,
   CheckCircle2,
+  Globe,
+  ShieldCheck,
+  HelpCircle,
+  Info,
 } from 'lucide-react';
 
 export {
@@ -68,7 +72,7 @@ export {
   Bookmark,
   Sparkles as AutoAwesome,
   ArrowLeft,
-  PersonIcon as Person,
+  UserIcon as Person,
   Users as Groups,
   Users as UsersIcon,
   Home,
@@ -110,7 +114,7 @@ export {
   TrendingUp,
   Award,
   Trash2,
-  PersonIcon as User,
+  UserIcon as User,
   Leaf as PottedPlant,
   MessageSquare,
   MapPin,
@@ -125,4 +129,8 @@ export {
   Sparkles,
   Palette,
   MessageSquareQuote,
+  Globe as Language,
+  ShieldCheck as PrivacyTip,
+  HelpCircle as HelpOutline,
+  Info,
 };

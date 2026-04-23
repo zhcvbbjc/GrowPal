@@ -298,7 +298,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
           </button>
           <h1 className="text-xl font-bold text-on-surface flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            智能搜索
+            搜索结果
           </h1>
         </div>
       </div>

@@ -240,7 +240,12 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => 
                             {post.created_at ? new Date(post.created_at).toLocaleString('zh-CN') : ''}
                           </span>
                         </div>
-                        <p className="text-sm md:text-base text-on-surface line-clamp-2 leading-relaxed mb-3">
+                        {post.title && (
+                          <h4 className="text-sm md:text-base font-bold text-on-surface line-clamp-1 mb-1">
+                            {post.title}
+                          </h4>
+                        )}
+                        <p className="text-sm text-on-surface-variant line-clamp-2 leading-relaxed mb-3">
                           {post.content}
                         </p>
                         <div className="flex items-center gap-4 text-on-surface-variant/60">

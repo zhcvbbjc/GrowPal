@@ -5,6 +5,7 @@ import { CommunityScreen } from './pages/CommunityScreen';
 import { AIChatScreen } from './pages/AIChatScreen';
 import { MessagesScreen } from './pages/MessagesScreen';
 import { ProfileScreen } from './pages/ProfileScreen';
+import { SettingsScreen } from './pages/SettingsScreen';
 import { SearchScreen } from './pages/SearchScreen';
 import LoginPage from './pages/LoginPage';
 import { cn } from './lib/utils';
@@ -45,6 +46,7 @@ const ProtectedRoute: React.FC<{
 function AppContent() {
     const { isLoggedIn, loading, login, logout } = useAuth();
     const [currentScreen, setCurrentScreen] = useState<Screen>('home');
+    const [previousScreen, setPreviousScreen] = useState<Screen | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
 
     const handleScreenChange = (screen: ScreenWithQuery) => {
@@ -58,6 +60,20 @@ function AppContent() {
         }
     };
 
+    const handleNavigateToSettings = () => {
+        setPreviousScreen(currentScreen);
+        setCurrentScreen('settings');
+    };
+
+    const handleBackToPrevious = () => {
+        if (previousScreen) {
+            setCurrentScreen(previousScreen);
+            setPreviousScreen(null);
+        } else {
+            setCurrentScreen('profile');
+        }
+    };
+
     const handleLoginSuccess = () => {
         setCurrentScreen('profile');
     };
@@ -65,6 +81,7 @@ function AppContent() {
     const handleLogout = () => {
         logout();
         setCurrentScreen('home');
+        setPreviousScreen(null);
     };
 
     const handleNavClick = (screenId: ScreenWithQuery) => {
@@ -116,7 +133,13 @@ function AppContent() {
             case 'profile':
                 return (
                     <ProtectedRoute isLogged={isLoggedIn} loading={loading} onLoginRequired={onLoginRequired}>
-                        <ProfileScreen onLogout={handleLogout} />
+                        <ProfileScreen onNavigateSettings={handleNavigateToSettings} onNavigateCommunity={() => setCurrentScreen('community')} onLogout={handleLogout} />
+                    </ProtectedRoute>
+                );
+            case 'settings':
+                return (
+                    <ProtectedRoute isLogged={isLoggedIn} loading={loading} onLoginRequired={onLoginRequired}>
+                        <SettingsScreen onBack={handleBackToPrevious} />
                     </ProtectedRoute>
                 );
             default:

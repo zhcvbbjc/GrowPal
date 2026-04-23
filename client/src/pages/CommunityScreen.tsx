@@ -199,23 +199,25 @@ export const CommunityScreen = () => {
                         )}
                       </div>
                     </div>
-                    {post.title && (
-                      <h4 className="text-base font-bold text-on-surface mb-2 font-headline line-clamp-2">
-                        {post.title}
-                      </h4>
-                    )}
-                    {post.tags && (
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        {JSON.parse(post.tags).map((tag: string) => (
-                          <span
-                            key={tag}
-                            className="px-2.5 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-medium"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 mb-2">
+                      {post.title && (
+                        <h4 className="text-base font-bold text-on-surface font-headline line-clamp-1 flex-1 min-w-0">
+                          {post.title}
+                        </h4>
+                      )}
+                      {post.tags && (
+                        <div className="flex flex-nowrap gap-1.5 flex-shrink-0">
+                          {JSON.parse(post.tags).map((tag: string) => (
+                            <span
+                              key={tag}
+                              className="px-2.5 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-medium whitespace-nowrap"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <p className="text-on-surface text-sm leading-relaxed line-clamp-3 whitespace-pre-wrap">
                       {post.content}
                     </p>
@@ -230,7 +232,7 @@ export const CommunityScreen = () => {
                       />
                     </div>
                   )}
-                  <div className="p-4 flex items-center gap-6 border-t border-surface-container pointer-events-none">
+                  <div className="p-4 flex items-center gap-6 pointer-events-none">
                     <span className="flex items-center gap-1.5 text-on-surface-variant text-xs font-bold">
                       <Favorite className="w-4 h-4" /> {post.like_count || 0}
                     </span>
@@ -271,7 +273,7 @@ export const CommunityScreen = () => {
                     </div>
                   </div>
                   <div className="flex items-start gap-2 mb-2">
-                    <h4 className="text-lg font-bold text-on-surface font-headline flex-1">{q.title}</h4>
+                    <h4 className="text-lg font-bold text-on-surface font-headline flex-1 line-clamp-1">{q.title}</h4>
                     {q.tags && (
                       <div className="flex flex-wrap gap-1.5 flex-shrink-0">
                         {JSON.parse(q.tags).map((tag: string) => (
