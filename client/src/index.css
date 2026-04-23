@@ -1,12 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* ============ 浅色主题 (默认) ============ */
-@theme light {
+/* ============ 默认主题变量 (浅色) ============ */
+@theme {
 	--font-headline: "Manrope", ui-sans-serif, system-ui, sans-serif;
 	--font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-	/* 主色 - 保持一致 */
+	/* 主色 - 绿色系 */
 	--color-primary: #206223;
 	--color-primary-container: #3a7b3a;
 	--color-on-primary: #ffffff;
@@ -61,44 +61,39 @@
 	--color-inverse-primary: #91d78a;
 }
 
-/* ============ 深色主题 ============ */
-@theme dark {
-	--font-headline: "Manrope", ui-sans-serif, system-ui, sans-serif;
-	--font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+/* ============ 深色主题变量 ============ */
+[data-theme="dark"] {
+	--color-primary: #81c784;
+	--color-primary-container: #1b3a1e;
+	--color-on-primary: #1a2e1a;
+	--color-on-primary-container: #a8d8a6;
+	--color-primary-fixed: #9fd8a0;
+	--color-primary-fixed-dim: #6aaa6e;
+	--color-on-primary-fixed: #0a1a0c;
+	--color-on-primary-fixed-variant: #1a3d1e;
 
-	/* 主色 - 深色下调整亮度 */
-	--color-primary: #ff8c66; /* 更亮的橙色 */
-	--color-primary-container: #42260d;
-	--color-on-primary: #ffffff;
-	--color-on-primary-container: #2d1a0a;
-	--color-primary-fixed: #d67c4b;
-	--color-primary-fixed-dim: #8b3d23;
-	--color-on-primary-fixed: #1a1409;
-	--color-on-primary-fixed-variant: #0d0a07;
+	--color-secondary: #b0bec5;
+	--color-secondary-container: #37474f;
+	--color-on-secondary: #1a2a2e;
+	--color-on-secondary-container: #cfd8dc;
+	--color-secondary-fixed: #cfd8dc;
+	--color-secondary-fixed-dim: #78909c;
+	--color-on-secondary-fixed: #0a1a1e;
+	--color-on-secondary-fixed-variant: #1a2e32;
 
-	--color-secondary: #a78bfa; /* 更亮的紫色 */
-	--color-secondary-container: #3b1f52;
-;
-	--color-on-secondary: #ffffff;
-	--color-on-secondary-container: #2a1545;
-	--color-secondary-fixed: #c874f9;
-	--color-secondary-fixed-dim: #6b3d82;
-	--color-on-secondary-fixed: #201134;
-	--color-on-secondary-fixed-variant: #120923;
+	--color-tertiary: #ce93d8;
+	--color-tertiary-container: #3b2e4a;
+	--color-on-tertiary: #2a1e35;
+	--color-on-tertiary-container: #e1bee7;
+	--color-tertiary-fixed: #ba68c8;
+	--color-tertiary-fixed-dim: #9c27b0;
+	--color-on-tertiary-fixed: #1a0e2a;
+	--color-on-tertiary-fixed-variant: #2d1b4e;
 
-	--color-tertiary: #4ade80; /* 更亮的绿色 */
-	--color-tertiary-container: #1e3828;
-	--color-on-tertiary: #ffffff;
-	--color-on-tertiary-container: #2a4d3e;
-	--color-tertiary-fixed: #7bcfa5;
-	--color-tertiary-fixed-dim: #3e6b30;
-	--color-on-tertiary-fixed: #0a2d15;
-	--color-on-tertiary-fixed-variant: #081c0a;
-
-	--color-error: #ff6b6b;
-	--color-error-container: #3d1b20;
-	--color-on-error: #ffffff;
-	--color-on-error-container: #4a1210;
+	--color-error: #ef9a9a;
+	--color-error-container: #4a1f1f;
+	--color-on-error: #2a0e0e;
+	--color-on-error-container: #ffcdd2;
 
 	--color-background: #121212;
 	--color-on-background: #e8e8e6;
@@ -118,68 +113,64 @@
 	--color-surface-container: #2d2d2d;
 	--color-surface-container-high: #383838;
 	--color-surface-container-highest: #424242;
-	--color-surface-tint: #383838;
-	--color-inverse-primary: #8b3d23;
+	--color-surface-tint: #2a4a2c;
+	--color-inverse-primary: #206223;
 }
 
-/* ============ 中性主题 (平衡) ============ */
-@theme neutral {
-	--font-headline: "Manrope", ui-sans-serif, system-ui, sans-serif;
-	--font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-
-	/* 主色 - 蓝色系 */
-	--color-primary: #3b82f6;
-	--color-primary-container: #dbeafe;
+/* ============ 中性主题变量 ============ */
+[data-theme="neutral"] {
+	--color-primary: #0891b2;
+	--color-primary-container: #cffafe;
 	--color-on-primary: #ffffff;
-	--color-on-primary-container: #f0f4ff;
-	--color-primary-fixed: #1d4ed8;
-	--color-primary-fixed-dim: #4a6cf7;
-	--color-on-primary-fixed: #0a244c;
-	--color-on-primary-fixed-variant: #051a32;
+	--color-on-primary-container: #ecfeff;
+	--color-primary-fixed: #06b6d4;
+	--color-primary-fixed-dim: #22d3ee;
+	--color-on-primary-fixed: #083344;
+	--color-on-primary-fixed-variant: #0e7490;
 
-	--color-secondary: #06b6d4; /* 青绿色 */
-	--color-secondary-container: #d4f7e6;
+	--color-secondary: #7c3aed;
+	--color-secondary-container: #ede9fe;
 	--color-on-secondary: #ffffff;
-	--color-on-secondary-container: #e6f7ff;
-	--color-secondary-fixed: #039485;
-	--color-secondary-fixed-dim: #06c665;
-	--color-on-secondary-fixed: #014d2c;
-	--color-on-secondary-fixed-variant: #012220;
+	--color-on-secondary-container: #f5f3ff;
+	--color-secondary-fixed: #8b5cf6;
+	--color-secondary-fixed-dim: #a78bfa;
+	--color-on-secondary-fixed: #2e1065;
+	--color-on-secondary-fixed-variant: #5b21b6;
 
-	--color-tertiary: #8b5cf6; /* 紫色 */
-	--color-tertiary-container: #f3e8ff;
+	--color-tertiary: #059669;
+	--color-tertiary-container: #d1fae5;
 	--color-on-tertiary: #ffffff;
-	--color-on-tertiary-container: #dcd6ff;
-	--color-tertiary-fixed: #5c2cb3;
-	--color-tertiary-fixed-dim: #7b4cd8;
-	--color-on-tertiary-fixed: #202a45;
-	--color-on-tertiary-fixed-variant: #150b1e;
+	--color-on-tertiary-container: #ecfdf5;
+	--color-tertiary-fixed: #10b981;
+	--color-tertiary-fixed-dim: #34d399;
+	--color-on-tertiary-fixed: #022c22;
+	--color-on-tertiary-fixed-variant: #047857;
 
 	--color-error: #dc2626;
-	--color-error-container: #fff1f2;
-	--color-on-error: #1f140d;
-	--color-on-error-container: #fff1f2;
+	--color-error-container: #fee2e2;
+	--color-on-error: #ffffff;
+	--color-on-error-container: #991b1b;
 
 	--color-background: #f8fafc;
-	--color-on-background: #1e293b;
-	--color-outline: #cbd5e1;
-	--color-outline-variant: #94a3b8;
+	--color-on-background: #0f172a;
+	--color-outline: #94a3b8;
+	--color-outline-variant: #cbd5e1;
 
 	--color-surface: #ffffff;
-	--color-on-surface: #1e293b;
+	--color-on-surface: #0f172a;
 	--color-surface-variant: #f1f5f9;
-	--color-on-surface-variant: #6b7280;
-	--color-inverse-surface: #1e293b;
+	--color-on-surface-variant: #475569;
+	--color-inverse-surface: #0f172a;
 	--color-inverse-on-surface: #ffffff;
 	--color-surface-bright: #ffffff;
-	--color-surface-dim: #e2e8f0;
-	--color-surface-container-lowest: #f8fafc;
-	--color-surface-container-low: #f1f5f9;
-	--color-surface-container: #ecfdf5;
-	--color-surface-container-high: #dbeafe;
-	--color-surface-container-highest: #f3e8ff;
-	--color-surface-tint: #eff6ff;
-	--color-inverse-primary: #4a6cf7;
+	--color-surface-dim: #f1f5f9;
+	--color-surface-container-lowest: #ffffff;
+	--color-surface-container-low: #f8fafc;
+	--color-surface-container: #f1f5f9;
+	--color-surface-container-high: #e2e8f0;
+	--color-surface-container-highest: #cbd5e1;
+	--color-surface-tint: #ecfeff;
+	--color-inverse-primary: #06b6d4;
 }
 
 /* ============ 默认应用浅色主题 ============ */
