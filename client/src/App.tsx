@@ -5,6 +5,7 @@ import { CommunityScreen } from './pages/CommunityScreen';
 import { AIChatScreen } from './pages/AIChatScreen';
 import { MessagesScreen } from './pages/MessagesScreen';
 import { ProfileScreen } from './pages/ProfileScreen';
+import { ProfileSettingsScreen } from './pages/ProfileSettingsScreen';
 import { SettingsScreen } from './pages/SettingsScreen';
 import { SearchScreen } from './pages/SearchScreen';
 import { SearchRecommendScreen } from './pages/SearchRecommendScreen';
@@ -114,6 +115,11 @@ function AppContent() {
         setCurrentScreen('settings');
     };
 
+    const handleNavigateToProfileSettings = () => {
+        setPreviousScreen(currentScreen);
+        setCurrentScreen('profileSettings');
+    };
+
     const handleBackToPrevious = () => {
         if (previousScreen) {
             setCurrentScreen(previousScreen);
@@ -214,7 +220,13 @@ function AppContent() {
             case 'profile':
                 return (
                     <ProtectedRoute isLogged={isLoggedIn} loading={loading} onLoginRequired={onLoginRequired}>
-                        <ProfileScreen onNavigateSettings={handleNavigateToSettings} onNavigateCommunity={() => setCurrentScreen('community')} onLogout={handleLogout} />
+                        <ProfileScreen onNavigateSettings={handleNavigateToProfileSettings} onNavigateCommunity={() => setCurrentScreen('community')} onLogout={handleLogout} />
+                    </ProtectedRoute>
+                );
+            case 'profileSettings':
+                return (
+                    <ProtectedRoute isLogged={isLoggedIn} loading={loading} onLoginRequired={onLoginRequired}>
+                        <ProfileSettingsScreen onBack={handleBackToPrevious} />
                     </ProtectedRoute>
                 );
             case 'settings':

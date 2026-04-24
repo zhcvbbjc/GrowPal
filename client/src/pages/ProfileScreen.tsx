@@ -28,6 +28,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateSettings
   const [nickname, setNickname] = useState('GrowPal 用户');
   const [avatar, setAvatar] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
+  const [bio, setBio] = useState<string | null>(null);
   const [location, setLocation] = useState<LocationData | null>(null);
   const [myPosts, setMyPosts] = useState<PostRow[]>([]);
   const [myQuestions, setMyQuestions] = useState<QuestionRow[]>([]);
@@ -46,6 +47,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateSettings
         setNickname(me.nickname);
         setAvatar(me.avatar);
         setPhone(me.phone);
+        setBio(me.bio);
         localStorage.setItem('growpal_user', JSON.stringify({
           id: me.id,
           nickname: me.nickname,
@@ -123,8 +125,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateSettings
               {nickname}
             </h2>
             <p className="text-on-surface-variant max-w-xl text-lg leading-relaxed mb-6">
-              账号信息来自后端 <code className="text-xs bg-surface-container px-1 rounded">/api/auth/me</code>
-              ，与登录态同步。
+              {bio || '用户个人简介'}
             </p>
             <div className="flex flex-wrap gap-3">
               <div className="bg-surface-container-lowest px-4 py-2 rounded-full flex items-center gap-2 border border-outline-variant/10">
@@ -180,7 +181,8 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateSettings
               {
                 icon: Person,
                 title: '个人信息',
-                desc: '昵称与头像由后端用户表提供',
+                desc: '修改用户名、头像、邮箱和个人简介',
+                onClick: onNavigateSettings,
               },
               {
                 icon: NotificationsActive,

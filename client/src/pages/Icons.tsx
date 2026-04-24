@@ -60,6 +60,8 @@ import {
   ShieldCheck,
   HelpCircle,
   Info,
+  Save,
+  Camera,
 } from 'lucide-react';
 
 export {
@@ -133,4 +135,6 @@ export {
   ShieldCheck as PrivacyTip,
   HelpCircle as HelpOutline,
   Info,
+  Save,
+  Camera,
 };

@@ -1,5 +1,5 @@
 /** 主屏切换（社区详情在 CommunityScreen 内部状态完成，不占用独立路由名） */
-export type Screen = 'home' | 'community' | 'chat' | 'messages' | 'profile' | 'LoginPage' | 'search' | 'searchRecommend' | 'userPage' | 'userSearch' | 'postDetail' | 'questionDetail';
+export type Screen = 'home' | 'community' | 'chat' | 'messages' | 'profile' | 'LoginPage' | 'search' | 'searchRecommend' | 'userPage' | 'userSearch' | 'postDetail' | 'questionDetail' | 'settings' | 'profileSettings';
 
 export type NavigateFunction = (screen: Screen | { screen: Screen; query: string; userId?: number; postId?: number; questionId?: number }) => void;
 

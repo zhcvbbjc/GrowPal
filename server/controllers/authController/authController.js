@@ -128,7 +128,7 @@ exports.login = async (req, res) => {
 exports.me = async (req, res) => {
     try {
         const [rows] = await pool.query(
-            'SELECT user_id, username, avatar, phone, email FROM users WHERE user_id = ?',
+            'SELECT user_id, username, avatar, phone, email, bio, role FROM users WHERE user_id = ?',
             [req.user.id]
         );
         if (rows.length === 0) {
@@ -140,7 +140,108 @@ exports.me = async (req, res) => {
             nickname: u.username,
             avatar: u.avatar,
             phone: u.phone,
-            email: u.email
+            email: u.email,
+            bio: u.bio,
+            role: u.role
+        });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ message: '服务器错误' });
+    }
+};
+
+/** 更新当前用户信息（需 Authorization） */
+exports.updateProfile = async (req, res) => {
+    try {
+        const { username, email, bio } = req.body;
+        const userId = req.user.id;
+
+        // 构建更新字段
+        const updates = [];
+        const values = [];
+
+        if (username !== undefined) {
+            updates.push('username = ?');
+            values.push(username);
+        }
+        if (email !== undefined) {
+            updates.push('email = ?');
+            values.push(email);
+        }
+        if (bio !== undefined) {
+            updates.push('bio = ?');
+            values.push(bio);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({ message: '没有需要更新的字段' });
+        }
+
+        // 检查用户名是否已被其他用户使用
+        if (username !== undefined) {
+            const [existing] = await pool.query(
+                'SELECT user_id FROM users WHERE username = ? AND user_id != ?',
+                [username, userId]
+            );
+            if (existing.length > 0) {
+                return res.status(400).json({ message: '用户名已被占用' });
+            }
+        }
+
+        // 检查邮箱是否已被其他用户使用
+        if (email !== undefined) {
+            const [existing] = await pool.query(
+                'SELECT user_id FROM users WHERE email = ? AND user_id != ?',
+                [email, userId]
+            );
+            if (existing.length > 0) {
+                return res.status(400).json({ message: '邮箱已被占用' });
+            }
+        }
+
+        values.push(userId);
+        const sql = `UPDATE users SET ${updates.join(', ')} WHERE user_id = ?`;
+        await pool.query(sql, values);
+
+        // 返回更新后的用户信息
+        const [rows] = await pool.query(
+            'SELECT user_id, username, avatar, phone, email, bio, role FROM users WHERE user_id = ?',
+            [userId]
+        );
+        const u = rows[0];
+        res.json({
+            message: '更新成功',
+            user: {
+                id: u.user_id,
+                nickname: u.username,
+                avatar: u.avatar,
+                phone: u.phone,
+                email: u.email,
+                bio: u.bio,
+                role: u.role
+            }
+        });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ message: '服务器错误' });
+    }
+};
+
+/** 更新用户头像（需 Authorization） */
+exports.updateAvatar = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: '请选择要上传的头像' });
+        }
+
+        const userId = req.user.id;
+        const avatarPath = `/uploads/${req.file.filename}`;
+
+        await pool.query('UPDATE users SET avatar = ? WHERE user_id = ?', [avatarPath, userId]);
+
+        res.json({
+            message: '头像上传成功',
+            avatar: avatarPath
         });
     } catch (e) {
         console.error(e);

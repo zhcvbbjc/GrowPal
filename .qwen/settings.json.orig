@@ -3,6 +3,5 @@
     "allow": [
       "Bash(curl *)"
     ]
-  },
-  "$version": 3
+  }
 }

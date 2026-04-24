@@ -212,7 +212,43 @@ export async function fetchMe() {
     avatar: string | null;
     phone: string | null;
     email: string | null;
+    bio: string | null;
+    role: string | null;
   }>('/auth/me');
+  return data;
+}
+
+/** 更新个人信息 */
+export async function updateProfile(payload: {
+  username?: string;
+  email?: string;
+  bio?: string;
+}) {
+  const { data } = await http.put<{
+    message: string;
+    user: {
+      id: number;
+      nickname: string;
+      avatar: string | null;
+      phone: string | null;
+      email: string | null;
+      bio: string | null;
+      role: string | null;
+    };
+  }>('/auth/profile', payload);
+  return data;
+}
+
+/** 上传头像 */
+export async function uploadAvatar(file: File) {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const { data } = await http.post<{
+    message: string;
+    avatar: string;
+  }>('/auth/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return data;
 }
 

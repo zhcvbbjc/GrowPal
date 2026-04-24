@@ -11,8 +11,13 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     phone         VARCHAR(32)  DEFAULT NULL,
     avatar        VARCHAR(512) DEFAULT NULL,
+    bio           TEXT         DEFAULT NULL,
+    role          VARCHAR(32)  DEFAULT 'user',
+    is_active     TINYINT(1)   DEFAULT 1,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_users_username (username),
+    UNIQUE KEY uq_users_email (email),
     UNIQUE KEY uq_users_phone (phone)
 );
 
