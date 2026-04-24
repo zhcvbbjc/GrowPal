@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Home, Groups, Psychology, Chat, Person } from './pages/Icons';
 import { HomeScreen } from './pages/HomeScreen';
 import { CommunityScreen } from './pages/CommunityScreen';
@@ -56,7 +56,36 @@ function AppContent() {
     const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
     const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(null);
 
-    const handleScreenChange = (screen: ScreenWithQuery) => {
+    // 初始化浏览器历史记录
+    useEffect(() => {
+        // 页面加载时，确保有一个初始的历史记录状态
+        if (history.length === 1) {
+            history.pushState({ screen: 'home' }, '', window.location.href);
+        }
+
+        // 监听浏览器的 popstate 事件（用户点击前进/后退按钮）
+        const handlePopState = (event: PopStateEvent) => {
+            // 如果历史记录不止一条，说明可以返回上一页
+            if (history.length > 1) {
+                history.back();
+            } else {
+                // 否则，跳转到首页
+                setCurrentScreen('home');
+                setSelectedUserId(null);
+                setSelectedPostId(null);
+                setSelectedQuestionId(null);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, []);
+
+    // 包装的屏幕切换函数，同时更新浏览器历史记录
+    const handleScreenChange = useCallback((screen: ScreenWithQuery) => {
         if (typeof screen === 'object') {
             if (screen.screen === 'search') {
                 setSearchQuery(screen.query);
@@ -71,10 +100,14 @@ function AppContent() {
                 setSelectedQuestionId(screen.questionId);
             }
             setCurrentScreen(screen.screen);
+            // 添加历史记录
+            history.pushState({ screen: screen.screen }, '', window.location.href);
         } else {
             setCurrentScreen(screen);
+            // 添加历史记录
+            history.pushState({ screen }, '', window.location.href);
         }
-    };
+    }, []);
 
     const handleNavigateToSettings = () => {
         setPreviousScreen(currentScreen);
