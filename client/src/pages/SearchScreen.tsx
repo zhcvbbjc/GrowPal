@@ -160,6 +160,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
     <div
       key={`user-${user.user_id}`}
       className="group flex items-center gap-4 p-4 bg-gradient-to-br from-white to-surface-container-low rounded-2xl border border-outline-variant/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+      onClick={() => onNavigate({ screen: 'userPage', query: '', userId: user.user_id })}
     >
       <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
         {user.avatar ? (
@@ -202,7 +203,13 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onNavigate, initialQ
           {item.type === 'post' ? '动态' : '问答'}
         </span>
         {item.user && (
-          <div className="flex items-center gap-2">
+          <div 
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate({ screen: 'userPage', query: '', userId: item.user!.user_id });
+            }}
+          >
             <div className="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center overflow-hidden">
               {item.user.avatar ? (
                 <img src={item.user.avatar} alt="" className="w-full h-full object-cover" />

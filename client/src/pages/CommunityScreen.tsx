@@ -27,7 +27,11 @@ import { useToast } from '../components/Toast';
 
 type Tab = 'posts' | 'questions';
 
-export const CommunityScreen = () => {
+interface CommunityScreenProps {
+  onNavigate?: (screen: any) => void;
+}
+
+export const CommunityScreen = ({ onNavigate }: CommunityScreenProps) => {
   const { isLoggedIn } = useAuth();
   const toast = useToast();
   const [tab, setTab] = useState<Tab>('posts');
@@ -95,7 +99,7 @@ export const CommunityScreen = () => {
 
   if (detail) {
     return (
-      <PostDetailPage type={detail.type} id={detail.id} onBack={() => setDetail(null)} />
+      <PostDetailPage type={detail.type} id={detail.id} onBack={() => setDetail(null)} onNavigate={onNavigate} />
     );
   }
 
@@ -190,7 +194,15 @@ export const CommunityScreen = () => {
                         <User className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-on-surface truncate">
+                        <p 
+                          className="text-xs font-bold text-on-surface truncate cursor-pointer hover:text-primary transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onNavigate && post.user_id) {
+                              onNavigate({ screen: 'userPage', query: '', userId: post.user_id });
+                            }
+                          }}
+                        >
                           {post.username || '匿名用户'}
                         </p>
                         {post.created_at && (
@@ -263,7 +275,15 @@ export const CommunityScreen = () => {
                       <User className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-on-surface truncate">
+                      <p 
+                        className="text-xs font-bold text-on-surface truncate cursor-pointer hover:text-primary transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onNavigate && q.user_id) {
+                            onNavigate({ screen: 'userPage', query: '', userId: q.user_id });
+                          }
+                        }}
+                      >
                         {q.username || '匿名用户'}
                       </p>
                       {q.created_at && (

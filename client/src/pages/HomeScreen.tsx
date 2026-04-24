@@ -202,7 +202,7 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => 
                 {recentPosts.map((post) => (
                   <article
                     key={post.post_id}
-                    onClick={() => onNavigate('community')}
+                    onClick={() => onNavigate({ screen: 'postDetail', query: '', postId: post.post_id })}
                     className="bg-white rounded-2xl p-4 md:p-5 border border-outline-variant/10 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-[0.98]"
                   >
                     <div className="flex gap-3">
@@ -254,7 +254,7 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => 
                 {recentQuestions.map((q) => (
                   <article
                     key={q.question_id}
-                    onClick={() => onNavigate('community')}
+                    onClick={() => onNavigate({ screen: 'questionDetail', query: '', questionId: q.question_id })}
                     className="bg-white rounded-2xl p-4 md:p-5 border border-outline-variant/10 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-[0.98]"
                   >
                     <div className="flex items-center gap-2 mb-2">

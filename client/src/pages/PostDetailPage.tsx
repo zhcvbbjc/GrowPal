@@ -25,9 +25,10 @@ type Props = {
   type: 'post' | 'question';
   id: number;
   onBack: () => void;
+  onNavigate?: (screen: any) => void;
 };
 
-export function PostDetailPage({ type, id, onBack }: Props) {
+export function PostDetailPage({ type, id, onBack, onNavigate }: Props) {
   const { isLoggedIn, user } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
@@ -242,7 +243,19 @@ export function PostDetailPage({ type, id, onBack }: Props) {
               </div>
               <div>
                 <p className="text-sm font-bold text-on-surface flex items-center gap-2">
-                  {author}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isAuthor) {
+                        onNavigate?.('profile');
+                      } else if (authorId) {
+                        onNavigate?.({ screen: 'userPage', query: '', userId: authorId });
+                      }
+                    }}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    {author}
+                  </button>
                   {isAuthor && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
                       作者

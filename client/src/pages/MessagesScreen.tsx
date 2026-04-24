@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, Psychology, Star, EditSquare, ArrowBack, Send, Loader2 } from './Icons';
+import { Search, Psychology, Star, EditSquare, ArrowBack, Send, Loader2, Groups as UsersIcon } from './Icons';
 import { cn } from '../lib/utils';
 import {
   listUserConversations,
@@ -11,6 +11,7 @@ import {
   type ConversationRow,
   type UserMessageRow,
 } from '../services/growpalApi';
+import { type NavigateFunction } from '../types';
 
 function formatConvTime(iso: string) {
   try {
@@ -36,7 +37,7 @@ function getMeId(): number | null {
   }
 }
 
-export const MessagesScreen = () => {
+export const MessagesScreen = ({ onNavigate }: { onNavigate?: NavigateFunction }) => {
   const [view, setView] = useState<'inbox' | 'thread'>('inbox');
   const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [loadingList, setLoadingList] = useState(true);
@@ -54,6 +55,8 @@ export const MessagesScreen = () => {
   >([]);
   const [searching, setSearching] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 已移除内联搜索功能，改用专门的用户搜索页面
 
   const meId = getMeId();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -81,28 +84,7 @@ export const MessagesScreen = () => {
     }
   }, [threadMessages, view]);
 
-  useEffect(() => {
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    const q = searchQ.trim();
-    if (q.length < 1) {
-      setSearchResults([]);
-      return;
-    }
-    searchTimer.current = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const rows = await searchChatUsers(q);
-        setSearchResults(rows);
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setSearching(false);
-      }
-    }, 320);
-    return () => {
-      if (searchTimer.current) clearTimeout(searchTimer.current);
-    };
-  }, [searchQ]);
+  // 已移除内联搜索的 useEffect，改用专门的用户搜索页面
 
   const openThread = async (c: ConversationRow) => {
     setActiveConv(c);
@@ -118,13 +100,9 @@ export const MessagesScreen = () => {
     }
   };
 
-  const startChatWithPeer = async (peerId: number) => {
+  const startChatWithPeer = async (peerId: number, peerName?: string, peerAv?: string | null) => {
     try {
-      const peerName = searchResults.find((s) => s.user_id === peerId)?.username || '用户';
-      const peerAv = searchResults.find((s) => s.user_id === peerId)?.avatar || null;
       const { conversationId } = await openUserConversation(peerId);
-      setSearchQ('');
-      setSearchResults([]);
       const rows = await listUserConversations();
       setConversations(rows);
       const row =
@@ -132,8 +110,8 @@ export const MessagesScreen = () => {
         ({
           id: conversationId,
           peer_id: peerId,
-          peer_username: peerName,
-          peer_avatar: peerAv,
+          peer_username: peerName || '用户',
+          peer_avatar: peerAv || null,
           last_message: null,
           unread_count: 0,
           updated_at: new Date().toISOString(),
@@ -274,56 +252,18 @@ export const MessagesScreen = () => {
               消息
             </h2>
           </div>
-          <div className="relative w-full md:w-80 group">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <Search className="text-outline w-5 h-5" />
-            </div>
-            <input
-              className="w-full bg-surface-container-low border-none rounded-lg py-3 pl-12 pr-4 text-on-surface placeholder:text-on-surface-variant/60 focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all font-body"
-              placeholder="搜索用户以发起聊天…"
-              type="text"
-              value={searchQ}
-              onChange={(e) => setSearchQ(e.target.value)}
-            />
-          </div>
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('userSearch')}
+              className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+            >
+              <UsersIcon className="w-5 h-5" />
+              <span>搜索用户</span>
+            </button>
+          )}
         </div>
         <div className="hidden lg:block absolute -right-24 top-0 w-48 h-48 bg-primary/5 rounded-[40px] rotate-12 -z-10" />
       </section>
-
-      {searchQ.trim().length > 0 && (
-        <section className="mb-8 bg-surface-container-lowest rounded-xl border border-outline-variant/10 p-4">
-          <p className="text-xs font-bold text-on-surface-variant mb-3 uppercase tracking-wider">
-            搜索结果
-          </p>
-          {searching ? (
-            <div className="flex justify-center py-6">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            </div>
-          ) : searchResults.length === 0 ? (
-            <p className="text-sm text-on-surface-variant text-center py-4">未找到用户</p>
-          ) : (
-            <div className="space-y-2">
-              {searchResults.map((u) => (
-                <button
-                  key={u.user_id}
-                  type="button"
-                  onClick={() => startChatWithPeer(u.user_id)}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low transition-colors text-left"
-                >
-                  <img
-                    src={u.avatar || `https://picsum.photos/seed/u${u.user_id}/80/80`}
-                    alt=""
-                    className="w-10 h-10 rounded-xl object-cover shrink-0"
-                    referrerPolicy="no-referrer"
-                  />
-                  <span className="font-bold text-on-surface">{u.username}</span>
-                  <span className="text-xs text-on-surface-variant ml-auto">发消息</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
 
       {listError && (
         <div className="mb-4 p-4 rounded-xl bg-error-container/30 text-error text-sm">{listError}</div>

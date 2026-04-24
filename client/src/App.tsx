@@ -8,6 +8,9 @@ import { ProfileScreen } from './pages/ProfileScreen';
 import { SettingsScreen } from './pages/SettingsScreen';
 import { SearchScreen } from './pages/SearchScreen';
 import { SearchRecommendScreen } from './pages/SearchRecommendScreen';
+import { UserPage } from './pages/UserPage';
+import { UserSearchScreen } from './pages/UserSearchScreen';
+import { PostDetailPage } from './pages/PostDetailPage';
 import LoginPage from './pages/LoginPage';
 import { cn } from './lib/utils';
 import { Screen } from './types';
@@ -18,7 +21,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 
-type ScreenWithQuery = Screen | { screen: Screen; query: string };
+type ScreenWithQuery = Screen | { screen: Screen; query: string; userId?: number; postId?: number; questionId?: number };
 
 const ProtectedRoute: React.FC<{
     isLogged: boolean;
@@ -49,11 +52,23 @@ function AppContent() {
     const [currentScreen, setCurrentScreen] = useState<Screen>('home');
     const [previousScreen, setPreviousScreen] = useState<Screen | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+    const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+    const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(null);
 
     const handleScreenChange = (screen: ScreenWithQuery) => {
         if (typeof screen === 'object') {
             if (screen.screen === 'search') {
                 setSearchQuery(screen.query);
+            }
+            if (screen.screen === 'userPage' && screen.userId) {
+                setSelectedUserId(screen.userId);
+            }
+            if (screen.screen === 'postDetail' && screen.postId) {
+                setSelectedPostId(screen.postId);
+            }
+            if (screen.screen === 'questionDetail' && screen.questionId) {
+                setSelectedQuestionId(screen.questionId);
             }
             setCurrentScreen(screen.screen);
         } else {
@@ -114,13 +129,43 @@ function AppContent() {
             case 'home':
                 return <HomeScreen onNavigate={handleScreenChange} />;
             case 'community':
-                return <CommunityScreen />;
+                return <CommunityScreen onNavigate={handleScreenChange} />;
             case 'LoginPage':
                 return <LoginPage onLoginSuccess={handleLoginSuccess} />;
             case 'searchRecommend':
                 return <SearchRecommendScreen onNavigate={handleScreenChange} />;
             case 'search':
                 return <SearchScreen onNavigate={handleScreenChange} initialQuery={searchQuery} />;
+            case 'userPage':
+                return selectedUserId ? (
+                    <UserPage onNavigate={handleScreenChange} userId={selectedUserId} />
+                ) : (
+                    <HomeScreen onNavigate={handleScreenChange} />
+                );
+            case 'userSearch':
+                return <UserSearchScreen onNavigate={handleScreenChange} />;
+            case 'postDetail':
+                return selectedPostId ? (
+                    <PostDetailPage
+                        type="post"
+                        id={selectedPostId}
+                        onBack={() => setCurrentScreen('community')}
+                        onNavigate={handleScreenChange}
+                    />
+                ) : (
+                    <CommunityScreen onNavigate={handleScreenChange} />
+                );
+            case 'questionDetail':
+                return selectedQuestionId ? (
+                    <PostDetailPage
+                        type="question"
+                        id={selectedQuestionId}
+                        onBack={() => setCurrentScreen('community')}
+                        onNavigate={handleScreenChange}
+                    />
+                ) : (
+                    <CommunityScreen onNavigate={handleScreenChange} />
+                );
             case 'chat':
                 return (
                     <ProtectedRoute isLogged={isLoggedIn} loading={loading} onLoginRequired={onLoginRequired}>
@@ -130,7 +175,7 @@ function AppContent() {
             case 'messages':
                 return (
                     <ProtectedRoute isLogged={isLoggedIn} loading={loading} onLoginRequired={onLoginRequired}>
-                        <MessagesScreen />
+                        <MessagesScreen onNavigate={handleScreenChange} />
                     </ProtectedRoute>
                 );
             case 'profile':
@@ -169,8 +214,8 @@ function AppContent() {
         }
     }, [isLoggedIn, currentScreen]);
 
-    const shouldShowHeader = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search';
-    const shouldShowBottomNav = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search';
+    const shouldShowHeader = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search' && currentScreen !== 'userPage' && currentScreen !== 'userSearch' && currentScreen !== 'postDetail' && currentScreen !== 'questionDetail';
+    const shouldShowBottomNav = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search' && currentScreen !== 'userPage' && currentScreen !== 'userSearch' && currentScreen !== 'postDetail' && currentScreen !== 'questionDetail';
 
     return (
         <div className="min-h-screen bg-surface flex flex-col">

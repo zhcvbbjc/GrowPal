@@ -39,6 +39,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/questions', require('./routes/question'));
+app.use('/api/users', require('./routes/users'));
 app.use('/api/aichat', require('./routes/aichat'));
 app.use('/api/userchat', require('./routes/userchat'));
 app.use('/api/location', require('./routes/location'));

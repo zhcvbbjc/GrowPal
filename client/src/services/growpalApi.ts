@@ -349,3 +349,28 @@ export async function search(keyword: string) {
   });
   return data;
 }
+
+/** 用户相关 */
+export type UserProfile = {
+  user_id: number;
+  username: string;
+  bio: string | null;
+  avatar: string | null;
+  role: string | null;
+  created_at: string;
+};
+
+export async function fetchUserProfile(userId: number) {
+  const { data } = await http.get<{ success: boolean; user: UserProfile }>(`/users/${userId}`);
+  return data.user;
+}
+
+export async function fetchUserPosts(userId: number) {
+  const { data } = await http.get<PostRow[]>(`/users/${userId}/posts`);
+  return data;
+}
+
+export async function fetchUserQuestions(userId: number) {
+  const { data } = await http.get<QuestionRow[]>(`/users/${userId}/questions`);
+  return data;
+}
