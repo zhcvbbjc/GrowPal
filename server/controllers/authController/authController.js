@@ -235,7 +235,7 @@ exports.updateAvatar = async (req, res) => {
         }
 
         const userId = req.user.id;
-        const avatarPath = `/uploads/${req.file.filename}`;
+        const avatarPath = `/uploads/user_image/${req.file.filename}`;
 
         await pool.query('UPDATE users SET avatar = ? WHERE user_id = ?', [avatarPath, userId]);
 

@@ -23,6 +23,10 @@ const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
+const userImageDir = path.join(__dirname, 'uploads/user_image');
+if (!fs.existsSync(userImageDir)) {
+    fs.mkdirSync(userImageDir, { recursive: true });
+}
 
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));

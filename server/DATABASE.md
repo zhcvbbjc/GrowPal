@@ -123,7 +123,7 @@ GrowPal 是一个社交平台，包含用户管理、帖子发布、问答互动
 
 ---
 
-### 8. ai_chats - AI对话消息表
+### 8.1 ai_chats - AI对话消息表
 
 存储AI对话的具体消息内容。
 
@@ -141,6 +141,22 @@ GrowPal 是一个社交平台，包含用户管理、帖子发布、问答互动
 | updated_at | timestamp | YES | - | CURRENT_TIMESTAMP | 更新时间 |
 
 ---
+
+### 8.2  ai_chat_images - AI对话图片表
+
+存储AI对话的具体图片内容
+
+| 字段名 | 类型 | 是否必填 | 索引 | 默认值            | 说明                            |
+|--------|------|------|------|----------------|-------------------------------|
+| image_id | bigint | NO   | PRI | auto_increment | 图片ID                          |
+| chat_id | int | NO   | MUL | -              | 关联的聊天记录ID                     |
+| image_url | varchar | NO   | MUL | -              | 图片存储路径/URL                    |
+| image_type | varchar | YES  | - | -              | 类型：input(用户上传) 或 output(AI生成) |
+| sort_order | int | YES  | - | 0              | 排序，防止多张图乱序                    |
+| created_at | timestamp | YES  | - | -              | 创建时间                          |
+
+---
+
 
 ### 9. user_chats - 用户间聊天消息表
 
