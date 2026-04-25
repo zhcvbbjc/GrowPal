@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Mic, AddCircle, Psychology, AutoAwesome, ArrowBack, Loader2, Trash2, X } from './Icons';
+import { Send, Mic, AddCircle, Psychology, AutoAwesome, ArrowBack, Loader2, Trash2, X, Image } from './Icons';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -18,6 +18,7 @@ interface ChatMessage {
   role: 'user' | 'model';
   text: string;
   timestamp: string;
+  images?: string[];
 }
 
 function formatTime(iso?: string) {
@@ -50,12 +51,47 @@ export const AIChatScreen = () => {
   const [bootLoading, setBootLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteSessionId, setDeleteSessionId] = useState<number | null>(null);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadSessionMessages = useCallback(async (sid: number) => {
     const pack = await getAiMessages(sid, 300);
     setMessages(mapRowsToMessages(pack.messages));
   }, []);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newFiles = Array.from(files);
+    const newPreviews: string[] = [];
+
+    newFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          newPreviews.push(event.target.result as string);
+          if (newPreviews.length === newFiles.length) {
+            setSelectedImages((prev) => [...prev, ...newFiles]);
+            setImagePreviews((prev) => [...prev, ...newPreviews]);
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 重置 input 以便重复选择同一文件
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const refreshSessions = useCallback(async () => {
     const list = await listAiSessions();
@@ -158,10 +194,16 @@ export const AIChatScreen = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading || sessionId == null) return;
+    if ((!input.trim() && selectedImages.length === 0) || isLoading || sessionId == null) return;
 
-    const text = input.trim();
+    const text = input.trim() || '请查看我发送的图片';
+    const images = [...selectedImages];
+    
+    // 清空输入和图片选择
     setInput('');
+    setSelectedImages([]);
+    setImagePreviews([]);
+    
     setIsLoading(true);
     setError(null);
 
@@ -169,6 +211,7 @@ export const AIChatScreen = () => {
       role: 'user',
       text,
       timestamp: formatTime(new Date().toISOString()),
+      images: imagePreviews.length > 0 ? [...imagePreviews] : undefined,
     };
     setMessages((prev) => [...prev, optimistic]);
 
@@ -181,7 +224,7 @@ export const AIChatScreen = () => {
     setMessages((prev) => [...prev, loadingMsg]);
 
     try {
-      const res = await sendAiMessage(sessionId, text);
+      const res = await sendAiMessage(sessionId, text, images);
       const aiMsg: ChatMessage = {
         role: 'model',
         text: res.reply,
@@ -375,6 +418,18 @@ export const AIChatScreen = () => {
                       </div>
                     ) : (
                       <div className="bg-surface-container-highest text-on-surface p-4 md:p-5 rounded-2xl rounded-tr-none shadow-sm">
+                        {msg.images && msg.images.length > 0 && (
+                          <div className="mb-2 grid grid-cols-2 gap-2">
+                            {msg.images.map((img, imgIdx) => (
+                              <img
+                                key={imgIdx}
+                                src={img}
+                                alt={`用户上传 ${imgIdx + 1}`}
+                                className="w-full h-32 object-cover rounded-lg"
+                              />
+                            ))}
+                          </div>
+                        )}
                         <p className="text-sm md:text-base whitespace-pre-wrap">{msg.text}</p>
                         <div className="mt-2 flex justify-end">
                           <span className="text-[10px] font-semibold text-on-surface-variant opacity-60">
@@ -409,28 +464,68 @@ export const AIChatScreen = () => {
       </div>
 
       <div className="fixed bottom-[72px] md:bottom-[88px] left-0 w-full px-2 md:px-8 z-40">
-        <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-outline-variant/20 p-2 flex items-center gap-2">
-          <input
-            className="flex-1 bg-transparent border-none focus:outline-none focus:ring-0 text-sm md:text-base px-3 placeholder:text-on-surface-variant/50"
-            placeholder="询问作物、土壤、天气等问题..."
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-          />
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={isLoading || sessionId == null || !input.trim()}
-            className="bg-gradient-to-br from-primary to-primary-container text-on-primary w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-          </button>
+        <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-outline-variant/20 p-2 flex flex-col gap-2">
+          {/* 图片预览 */}
+          {imagePreviews.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar">
+              {imagePreviews.map((preview, idx) => (
+                <div key={idx} className="relative flex-shrink-0">
+                  <img
+                    src={preview}
+                    alt={`预览 ${idx + 1}`}
+                    className="w-16 h-16 object-cover rounded-lg border border-outline-variant/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(idx)}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs shadow-sm"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-gradient-to-br from-secondary to-secondary-container text-on-secondary-container w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform"
+              title="上传图片"
+            >
+              <Image className="w-5 h-5" />
+            </button>
+            <input
+              className="flex-1 bg-transparent border-none focus:outline-none focus:ring-0 text-sm md:text-base px-3 placeholder:text-on-surface-variant/50"
+              placeholder="询问作物、土壤、天气等问题..."
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={isLoading || sessionId == null || (!input.trim() && selectedImages.length === 0)}
+              className="bg-gradient-to-br from-primary to-primary-container text-on-primary w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
 

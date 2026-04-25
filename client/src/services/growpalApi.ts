@@ -137,11 +137,21 @@ export async function getAiMessages(sessionId: number, limit?: number) {
   return data;
 }
 
-export async function sendAiMessage(sessionId: number, content: string) {
-  const { data } = await http.post<{ reply: string; assistantMessageId: number }>(
-    `/aichat/sessions/${sessionId}/messages`,
-    { content }
-  );
+export async function sendAiMessage(sessionId: number, content: string, images?: File[]) {
+  const formData = new FormData();
+  formData.append('content', content);
+  if (images && images.length > 0) {
+    images.forEach((file) => {
+      formData.append('images', file);
+    });
+  }
+  const { data } = await http.post<{
+    reply: string;
+    assistantMessageId: number;
+    imageDescription?: string | null;
+  }>(`/aichat/sessions/${sessionId}/messages`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return data;
 }
 

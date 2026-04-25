@@ -62,6 +62,7 @@ import {
   Info,
   Save,
   Camera,
+  Image,
 } from 'lucide-react';
 
 export {
@@ -137,4 +138,5 @@ export {
   Info,
   Save,
   Camera,
+  Image,
 };

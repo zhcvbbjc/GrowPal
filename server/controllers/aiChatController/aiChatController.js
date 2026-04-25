@@ -1,5 +1,5 @@
 const AiChat = require('../../models/AiChat');
-const { chat: llmChat, generateTitle } = require('../../services/llmService');
+const { runAgent } = require('../../agent/index');
 
 const SYSTEM_PROMPT =
     process.env.LLM_SYSTEM_PROMPT ||
@@ -52,8 +52,9 @@ exports.getMessages = async (req, res) => {
 };
 
 /**
- * 发送用户消息并调用大模型回复
+ * 发送用户消息并调用智能体回复（支持图片上传）
  * body: { content: string }
+ * files: images (可选，最多5张)
  */
 exports.sendMessage = async (req, res) => {
     try {
@@ -65,33 +66,31 @@ exports.sendMessage = async (req, res) => {
         const session = await AiChat.getSession(req.params.sessionId, req.user.id);
         if (!session) return res.status(404).json({ message: '会话不存在' });
 
-        // 保存用户消息到 ai_chats 表
-        await AiChat.addMessage(
-            session.id, 
-            'user', 
-            content, 
-            req.user.id,
-            process.env.LLM_MODEL || 'deepseek-chat'
-        );
-
-        // 获取对话历史
-        const history = await AiChat.listMessages(session.id, 40);
-        const messagesForLlm = [{ role: 'system', content: SYSTEM_PROMPT }];
-        for (const m of history) {
-            if (m.role === 'user' || m.role === 'assistant') {
-                messagesForLlm.push({ role: m.role, content: m.content });
+        // 处理上传的图片
+        const images = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                images.push({
+                    filePath: file.path,
+                    url: `/uploads/ai_chat_images/${file.filename}`
+                });
             }
         }
 
-        let reply;
-        let tokenCount = 0;
-        try {
-            console.log(`[AI] 调用 DeepSeek API，消息长度: ${messagesForLlm.length} 条`);
-            reply = await llmChat(messagesForLlm);
-            tokenCount = reply.length; // 简化计算，实际应该使用 tokenizer
-            console.log(`[AI] 回复成功，回复长度: ${reply.length} 字符`);
-        } catch (err) {
-            console.error('[AI] 大模型调用失败:', err.message);
+        // 获取用户 IP
+        const userIp = req.ip || req.connection?.remoteAddress || '';
+
+        // 调用智能体
+        const result = await runAgent({
+            userId: req.user.id,
+            sessionId: session.id,
+            userMessage: content,
+            userIp,
+            images
+        });
+
+        if (result.error) {
+            const err = result.error;
             if (err.code === 'LLM_NO_KEY') {
                 return res.status(503).json({
                     message: '未配置大模型 API 密钥，请联系管理员配置 LLM_API_KEY 环境变量'
@@ -110,35 +109,23 @@ exports.sendMessage = async (req, res) => {
             });
         }
 
-        // 保存AI回复到 ai_chats 表
-        const assistantMsgId = await AiChat.addMessage(
-            session.id,
-            'assistant',
-            reply,
-            req.user.id,
-            process.env.LLM_MODEL || 'deepseek-chat'
-        );
-        await AiChat.updateSessionTime(session.id);
-
-        // 如果是新对话，使用大模型生成标题
-        if (session.title === '新对话') {
+        // 新对话生成标题
+        if (session.title === '新对话' && content) {
             try {
-                console.log(`[AI] 为新对话生成标题，用户消息: "${content.slice(0, 50)}..."`);
+                const { generateTitle } = require('../../services/llmService');
                 const generatedTitle = await generateTitle(content);
                 await AiChat.updateSessionTitle(session.id, req.user.id, generatedTitle);
-                console.log(`[AI] 标题生成成功: "${generatedTitle}"`);
             } catch (titleErr) {
                 console.error('[AI] 标题生成失败，使用默认标题:', titleErr.message);
-                // 如果标题生成失败，使用用户消息的第一行作为备选
                 const fallbackTitle = content.split('\n')[0].slice(0, 40) || '新对话';
                 await AiChat.updateSessionTitle(session.id, req.user.id, fallbackTitle);
             }
         }
 
         res.json({
-            reply,
-            assistantMessageId: assistantMsgId,
-            token_count: tokenCount
+            reply: result.reply,
+            assistantMessageId: result.assistantMsgId,
+            imageDescription: result.imageDescription
         });
     } catch (e) {
         console.error('[AI] 发送消息失败:', e);

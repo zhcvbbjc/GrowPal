@@ -48,6 +48,7 @@ app.use('/api/aichat', require('./routes/aichat'));
 app.use('/api/userchat', require('./routes/userchat'));
 app.use('/api/location', require('./routes/location'));
 app.use('/api/search', require('./routes/search'));
+app.use('/api/agent', require('./agent/routes'));
 
 app.use((req, res) => {
     res.status(404).json({ message: '接口不存在' });

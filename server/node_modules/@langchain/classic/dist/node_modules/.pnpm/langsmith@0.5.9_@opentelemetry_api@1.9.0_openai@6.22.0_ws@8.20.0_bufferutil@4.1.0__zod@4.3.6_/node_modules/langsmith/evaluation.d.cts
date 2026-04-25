@@ -1,0 +1,1 @@
+import { EvaluationResult, RunEvaluator } from "./dist/evaluation/evaluator.cjs";
