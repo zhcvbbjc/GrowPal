@@ -18,11 +18,12 @@ import { cn } from '../lib/utils';
 
 interface ProfileScreenProps {
   onNavigateSettings: () => void;
+  onNavigateAppSettings: () => void;
   onNavigateCommunity: () => void;
   onLogout: () => void;
 }
 
-export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateSettings, onNavigateCommunity, onLogout }) => {
+export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateSettings, onNavigateAppSettings, onNavigateCommunity, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [nickname, setNickname] = useState('GrowPal 用户');
@@ -198,7 +199,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateSettings
                 icon: Settings,
                 title: '设置',
                 desc: '应用主题、语言、通知',
-                onClick: onNavigateSettings,
+                onClick: onNavigateAppSettings,
               },
             ].map((item, i) => (
               <div

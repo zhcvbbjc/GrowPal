@@ -220,7 +220,7 @@ function AppContent() {
             case 'profile':
                 return (
                     <ProtectedRoute isLogged={isLoggedIn} loading={loading} onLoginRequired={onLoginRequired}>
-                        <ProfileScreen onNavigateSettings={handleNavigateToProfileSettings} onNavigateCommunity={() => setCurrentScreen('community')} onLogout={handleLogout} />
+                        <ProfileScreen onNavigateSettings={handleNavigateToProfileSettings} onNavigateAppSettings={handleNavigateToSettings} onNavigateCommunity={() => setCurrentScreen('community')} onLogout={handleLogout} />
                     </ProtectedRoute>
                 );
             case 'profileSettings':
