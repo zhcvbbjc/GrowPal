@@ -110,13 +110,31 @@ const AiChat = {
      */
     listAllMessagesChronological: async (sessionId, maxRows = 500) => {
         const [rows] = await pool.query(
-            `SELECT chat_id as id, role, message as content, model_name, token_count, status, created_at
-             FROM ai_chats
-             WHERE session_id = ?
-             ORDER BY chat_id ASC
+            `SELECT c.chat_id as id, c.role, c.message as content, c.model_name, c.token_count, c.status, c.created_at,
+                    COALESCE(i.images, '[]') as images
+             FROM ai_chats c
+             LEFT JOIN (
+                 SELECT chat_id, JSON_ARRAYAGG(JSON_OBJECT('url', image_url, 'type', image_type, 'sort', sort_order)) AS images
+                 FROM ai_chat_images
+                 GROUP BY chat_id
+             ) i ON i.chat_id = c.chat_id
+             WHERE c.session_id = ?
+             ORDER BY c.chat_id ASC
              LIMIT ?`,
             [sessionId, maxRows]
         );
+        for (const row of rows) {
+            if (typeof row.images === 'string') {
+                try {
+                    row.images = JSON.parse(row.images);
+                } catch {
+                    row.images = [];
+                }
+            }
+            if (!Array.isArray(row.images)) {
+                row.images = [];
+            }
+        }
         return rows;
     }
 };

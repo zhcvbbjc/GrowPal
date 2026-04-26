@@ -31,13 +31,20 @@ function formatTime(iso?: string) {
 }
 
 function mapRowsToMessages(
-  rows: { role: string; content: string; created_at: string }[]
+  rows: { role: string; content: string; created_at: string; images?: { url: string; type: string; sort: number }[] | null }[]
 ): ChatMessage[] {
-  return rows.map((m) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    text: m.content,
-    timestamp: formatTime(m.created_at),
-  }));
+  return rows.map((m) => {
+    const imgs = m.images
+      ?.filter((img) => img != null)
+      .sort((a, b) => a.sort - b.sort)
+      .map((img) => img.url);
+    return {
+      role: m.role === 'assistant' ? 'model' : 'user',
+      text: m.content,
+      timestamp: formatTime(m.created_at),
+      images: imgs && imgs.length > 0 ? imgs : undefined,
+    };
+  });
 }
 
 export const AIChatScreen = () => {

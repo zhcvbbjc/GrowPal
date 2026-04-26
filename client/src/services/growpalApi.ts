@@ -132,7 +132,7 @@ export async function listAiSessions() {
 export async function getAiMessages(sessionId: number, limit?: number) {
   const { data } = await http.get<{
     session: { id: number; title: string };
-    messages: { id: number; role: string; content: string; created_at: string }[];
+    messages: { id: number; role: string; content: string; created_at: string; images?: { url: string; type: string; sort: number }[] | null }[];
   }>(`/aichat/sessions/${sessionId}/messages`, { params: { limit } });
   return data;
 }
