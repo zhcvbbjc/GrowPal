@@ -8,10 +8,12 @@ import { ProfileScreen } from './pages/ProfileScreen';
 import { ProfileSettingsScreen } from './pages/ProfileSettingsScreen';
 import { SettingsScreen } from './pages/SettingsScreen';
 import { SearchScreen } from './pages/SearchScreen';
+import { LearnScreen } from './pages/LearnScreen';
 import { SearchRecommendScreen } from './pages/SearchRecommendScreen';
 import { UserPage } from './pages/UserPage';
 import { UserSearchScreen } from './pages/UserSearchScreen';
 import { PostDetailPage } from './pages/PostDetailPage';
+import { MapScreen } from './pages/MapScreen';
 import LoginPage from './pages/LoginPage';
 import { cn } from './lib/utils';
 import { Screen } from './types';
@@ -54,6 +56,7 @@ function AppContent() {
     const [previousScreen, setPreviousScreen] = useState<Screen | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+    const [communityTab, setCommunityTab] = useState<'posts' | 'questions' | 'exchange' | 'learn'>('posts');
     const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
     const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(null);
 
@@ -99,6 +102,10 @@ function AppContent() {
             }
             if (screen.screen === 'questionDetail' && screen.questionId) {
                 setSelectedQuestionId(screen.questionId);
+            }
+            if (screen.screen === 'community' && screen.tab) {
+                // 传递tab参数到社区页面
+                setCommunityTab(screen.tab as 'posts' | 'questions' | 'exchange' | 'learn');
             }
             setCurrentScreen(screen.screen);
             // 添加历史记录
@@ -168,7 +175,11 @@ function AppContent() {
             case 'home':
                 return <HomeScreen onNavigate={handleScreenChange} />;
             case 'community':
-                return <CommunityScreen onNavigate={handleScreenChange} />;
+                return <CommunityScreen onNavigate={handleScreenChange} initialTab={communityTab} />;
+            case 'learn':
+                return <LearnScreen />;
+            case 'map':
+                return <MapScreen onBack={() => setCurrentScreen('home')} />;
             case 'LoginPage':
                 return <LoginPage onLoginSuccess={handleLoginSuccess} />;
             case 'searchRecommend':
@@ -188,22 +199,24 @@ function AppContent() {
                     <PostDetailPage
                         type="post"
                         id={selectedPostId}
-                        onBack={() => setCurrentScreen('community')}
+                        onBack={() => { setCurrentScreen('community'); setSelectedPostId(null); }}
                         onNavigate={handleScreenChange}
+                        onDeleted={() => setSelectedPostId(null)}
                     />
                 ) : (
-                    <CommunityScreen onNavigate={handleScreenChange} />
+                    <CommunityScreen onNavigate={handleScreenChange} initialTab={communityTab} />
                 );
             case 'questionDetail':
                 return selectedQuestionId ? (
                     <PostDetailPage
                         type="question"
                         id={selectedQuestionId}
-                        onBack={() => setCurrentScreen('community')}
+                        onBack={() => { setCurrentScreen('community'); setSelectedQuestionId(null); }}
                         onNavigate={handleScreenChange}
+                        onDeleted={() => setSelectedQuestionId(null)}
                     />
                 ) : (
-                    <CommunityScreen onNavigate={handleScreenChange} />
+                    <CommunityScreen onNavigate={handleScreenChange} initialTab={communityTab} />
                 );
             case 'chat':
                 return (
@@ -259,8 +272,8 @@ function AppContent() {
         }
     }, [isLoggedIn, currentScreen]);
 
-    const shouldShowHeader = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search' && currentScreen !== 'userPage' && currentScreen !== 'userSearch' && currentScreen !== 'postDetail' && currentScreen !== 'questionDetail';
-    const shouldShowBottomNav = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search' && currentScreen !== 'userPage' && currentScreen !== 'userSearch' && currentScreen !== 'postDetail' && currentScreen !== 'questionDetail';
+    const shouldShowHeader = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search' && currentScreen !== 'userPage' && currentScreen !== 'userSearch' && currentScreen !== 'postDetail' && currentScreen !== 'questionDetail' && currentScreen !== 'map';
+    const shouldShowBottomNav = currentScreen !== 'LoginPage' && currentScreen !== 'searchRecommend' && currentScreen !== 'search' && currentScreen !== 'userPage' && currentScreen !== 'userSearch' && currentScreen !== 'postDetail' && currentScreen !== 'questionDetail' && currentScreen !== 'map';
 
     return (
         <div className="min-h-screen bg-surface flex flex-col">

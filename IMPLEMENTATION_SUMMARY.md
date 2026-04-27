@@ -55,8 +55,11 @@
 ### 启动 Meilisearches
 
 **方法 1: Docker（推荐）**
+
+进入docker文件夹
+
 ```bash
-docker run -d -p 7700:7700 --name meilisearch getmeili/meilisearch:latest
+docker-compose up -d
 ```
 
 **方法 2: Windows 可执行文件**

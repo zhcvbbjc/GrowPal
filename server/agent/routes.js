@@ -1,14 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth');
-const upload = require('../utils/upload');
+const { createUploadMiddleware } = require('../utils/upload');
 const { runAgent } = require('./index');
+
+// 创建AI聊天图片上传中间件
+const uploadAiChatImages = createUploadMiddleware('ai_chat_images', true).array('images', 5);
 
 // 发送消息（支持图片上传）
 router.post(
     '/message',
     authMiddleware,
-    upload.array('images', 5),
+    uploadAiChatImages,
     async (req, res) => {
         try {
             const content = req.body.content != null ? String(req.body.content).trim() : '';
@@ -24,7 +27,7 @@ router.post(
                 for (const file of req.files) {
                     images.push({
                         filePath: file.path,
-                        url: `/uploads/${file.filename}`
+                        url: `/uploads/ai_chat_images/${file.filename}`
                     });
                 }
             }

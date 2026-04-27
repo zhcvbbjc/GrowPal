@@ -63,6 +63,8 @@ import {
   Save,
   Camera,
   Image,
+  BookOpen,
+  Flower,
 } from 'lucide-react';
 
 export {
@@ -139,4 +141,6 @@ export {
   Save,
   Camera,
   Image,
+  BookOpen,
+  Flower as LocalFlorist,
 };

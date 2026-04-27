@@ -11,7 +11,7 @@ export type PostRow = {
   ai_summary: string | null;
   cover_image: string | null;
   tags: string | null;
-  image_path: string | null;
+  image_path: string | null; // 多张图片以逗号分隔
   username?: string;
   avatar?: string | null;
   created_at?: string;
@@ -263,7 +263,7 @@ export async function uploadAvatar(file: File) {
 }
 
 /** 创建文章 */
-export async function createPost(content: string, image?: File | null, title?: string, tags?: string[]) {
+export async function createPost(content: string, images?: File[], title?: string, tags?: string[]) {
   const formData = new FormData();
   if (title) {
     formData.append('title', title);
@@ -272,8 +272,10 @@ export async function createPost(content: string, image?: File | null, title?: s
   if (tags && tags.length > 0) {
     formData.append('tags', JSON.stringify(tags));
   }
-  if (image) {
-    formData.append('image', image);
+  if (images && images.length > 0) {
+    images.forEach((file) => {
+      formData.append('images', file);
+    });
   }
   const { data } = await http.post<{ id: number }>('/posts', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -281,16 +283,36 @@ export async function createPost(content: string, image?: File | null, title?: s
   return data;
 }
 
+/** 删除文章 */
+export async function deletePost(postId: number) {
+  const { data } = await http.delete<{ message: string }>(`/posts/${postId}`);
+  return data;
+}
+
+/** 删除问题 */
+export async function deleteQuestion(questionId: number) {
+  const { data } = await http.delete<{ message: string }>(`/questions/${questionId}`);
+  return data;
+}
+
+/** 删除换花帖子 */
+export async function deleteExchangeFlower(exchangeId: number) {
+  const { data } = await http.delete<{ message: string }>(`/exchange-flowers/${exchangeId}`);
+  return data;
+}
+
 /** 创建问题 */
-export async function createQuestion(title: string, content: string, image?: File | null, tags?: string[]) {
+export async function createQuestion(title: string, content: string, images?: File[], tags?: string[]) {
   const formData = new FormData();
   formData.append('title', title);
   formData.append('content', content);
   if (tags && tags.length > 0) {
     formData.append('tags', JSON.stringify(tags));
   }
-  if (image) {
-    formData.append('image', image);
+  if (images && images.length > 0) {
+    images.forEach((file) => {
+      formData.append('images', file);
+    });
   }
   const { data } = await http.post<{ id: number }>('/questions', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -418,5 +440,81 @@ export async function fetchUserPosts(userId: number) {
 
 export async function fetchUserQuestions(userId: number) {
   const { data } = await http.get<QuestionRow[]>(`/users/${userId}/questions`);
+  return data;
+}
+
+/** 换花帖子 */
+export type ExchangeFlowerRow = {
+  id?: number;
+  exchange_id: number;
+  user_id: number;
+  title: string | null;
+  content: string;
+  exchange_status: string; // pending/confirmed/completed
+  cover_image: string | null;
+  tags: string | null;
+  image_path: string | null;
+  username?: string;
+  avatar?: string | null;
+  created_at?: string;
+  like_count?: number;
+  comment_count?: number;
+};
+
+export async function fetchExchangeFlowers() {
+  const { data } = await http.get<ExchangeFlowerRow[]>('/exchange-flowers');
+  return data;
+}
+
+export async function fetchExchangeFlower(id: number) {
+  const { data } = await http.get<ExchangeFlowerRow>(`/exchange-flowers/${id}`);
+  return data;
+}
+
+export async function fetchMyExchangeFlowers() {
+  const { data } = await http.get<ExchangeFlowerRow[]>('/exchange-flowers/my/posts');
+  return data;
+}
+
+export async function createExchangeFlower(content: string, images?: File[], title?: string, tags?: string[], exchange_status?: string) {
+  const formData = new FormData();
+  if (title) {
+    formData.append('title', title);
+  }
+  formData.append('content', content);
+  if (tags && tags.length > 0) {
+    formData.append('tags', JSON.stringify(tags));
+  }
+  if (exchange_status) {
+    formData.append('exchange_status', exchange_status);
+  }
+  if (images && images.length > 0) {
+    images.forEach((file) => {
+      formData.append('images', file);
+    });
+  }
+  const { data } = await http.post<{ id: number }>('/exchange-flowers', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+export async function fetchExchangeFlowerComments(exchangeId: number) {
+  const { data } = await http.get<CommentRow[]>(`/exchange-flowers/${exchangeId}/comments`);
+  return data;
+}
+
+export async function toggleExchangeFlowerLike(exchangeId: number) {
+  const { data } = await http.post<{ liked: boolean }>(`/exchange-flowers/${exchangeId}/like`);
+  return data;
+}
+
+export async function getExchangeFlowerLikeCount(exchangeId: number) {
+  const { data } = await http.get<{ count: number }>(`/exchange-flowers/${exchangeId}/likes`);
+  return data.count;
+}
+
+export async function createExchangeFlowerComment(exchangeId: number, content: string) {
+  const { data } = await http.post(`/exchange-flowers/${exchangeId}/comments`, { content });
   return data;
 }

@@ -11,6 +11,8 @@ import {
   toggleQuestionLike,
   createPostComment,
   createQuestionComment,
+  deletePost,
+  deleteQuestion,
   getApiMessage,
   type CommentRow,
   type PostRow,
@@ -26,9 +28,10 @@ type Props = {
   id: number;
   onBack: () => void;
   onNavigate?: (screen: any) => void;
+  onDeleted?: () => void;
 };
 
-export function PostDetailPage({ type, id, onBack, onNavigate }: Props) {
+export function PostDetailPage({ type, id, onBack, onNavigate, onDeleted }: Props) {
   const { isLoggedIn, user } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
@@ -172,8 +175,15 @@ export function PostDetailPage({ type, id, onBack, onNavigate }: Props) {
   const confirmDelete = async () => {
     setDeleteDialog(false);
     try {
-      // TODO: 实现删除API
-      toast.info('删除功能开发中...');
+      if (type === 'post') {
+        await deletePost(id);
+        toast.success('删除成功');
+      } else {
+        await deleteQuestion(id);
+        toast.success('删除成功');
+      }
+      onDeleted?.();
+      onBack();
     } catch (e) {
       toast.error(getApiMessage(e));
     }
@@ -317,13 +327,17 @@ export function PostDetailPage({ type, id, onBack, onNavigate }: Props) {
 
         {/* 图片 */}
         {imagePath && (
-          <div className="relative w-full aspect-video bg-surface-variant">
-            <img
-              src={imagePath}
-              alt=""
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
+          <div className="grid grid-cols-3 gap-2">
+            {imagePath.split(',').map((img, idx) => (
+              <div key={idx} className="relative aspect-square bg-surface-variant rounded-lg overflow-hidden">
+                <img
+                  src={img.trim()}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            ))}
           </div>
         )}
 

@@ -2,6 +2,7 @@ const Question = require('../../models/Question');
 const { answerQuestion } = require('../../services/llmService');
 const fs = require('fs');
 const path = require('path');
+const { createUploadMiddleware } = require('../../utils/upload');
 
 const serverRoot = path.join(__dirname, '../..');
 
@@ -21,10 +22,18 @@ exports.createQuestion = async (req, res) => {
             return res.status(400).json({ message: '请填写内容' });
         }
         const user_id = req.user.id;
-        const image_path = req.file ? `/uploads/${req.file.filename}` : null;
-
-        const questionId = await Question.create({ user_id, title, content, tags, image_path });
         
+        // 处理多张图片
+        let image_paths = [];
+        if (req.files && req.files.length > 0) {
+            image_paths = req.files.map(file => `/uploads/question_images/${file.filename}`);
+        }
+        
+        const image_path = image_paths.length > 0 ? image_paths.join(',') : null;
+        const cover_image = image_paths.length > 0 ? image_paths[0] : null;
+
+        const questionId = await Question.create({ user_id, title, content, tags, image_path, cover_image });
+
         // 异步生成 AI 解答，不阻塞响应
         (async () => {
             try {
@@ -40,7 +49,7 @@ exports.createQuestion = async (req, res) => {
                 console.error(`[AI 解答] 问题 ${questionId} 解答生成失败:`, err.message);
             }
         })();
-        
+
         res.status(201).json({ message: '提问成功', questionId });
     } catch (err) {
         console.error(err);

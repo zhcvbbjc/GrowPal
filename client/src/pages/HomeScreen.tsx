@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Groups, UsersIcon, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote, Chat, MapPin, Cloud, SunIcon, CloudRain } from './Icons';
+import { Psychology, Favorite, ChatBubble, Bookmark, AutoAwesome, PottedPlant, TrendingUp, Groups, UsersIcon, Award, ArrowRight, Loader2, EditSquare, MessageSquareQuote, Chat, MapPin, Cloud, SunIcon, CloudRain, BookOpen, LocalFlorist } from './Icons';
 import { cn } from '../lib/utils';
 import { fetchPosts, fetchQuestions, getApiMessage, getCurrentLocationAndWeather, type PostRow, type QuestionRow, type LocationData, type WeatherData, type WeatherCast } from '../services/growpalApi';
 import { useToast } from '../components/Toast';
@@ -57,9 +57,12 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => 
 
   const quickActions = [
     { icon: Psychology, label: 'AI 问答', color: 'from-primary to-primary-container', screen: 'chat' as const },
-    { icon: EditSquare, label: '发动态', color: 'from-blue-500 to-blue-600', screen: 'community' as const },
-    { icon: MessageSquareQuote, label: '提问题', color: 'from-purple-500 to-purple-600', screen: 'community' as const },
+    { icon: EditSquare, label: '发动态', color: 'from-blue-500 to-blue-600', screen: 'community' as const, tab: 'posts' as const },
+    { icon: MessageSquareQuote, label: '提问题', color: 'from-purple-500 to-purple-600', screen: 'community' as const, tab: 'questions' as const },
     { icon: Chat, label: '私信', color: 'from-orange-500 to-orange-600', screen: 'messages' as const },
+    { icon: BookOpen, label: '学习', color: 'from-teal-500 to-teal-600', screen: 'learn' as const },
+    { icon: LocalFlorist, label: '换花', color: 'from-pink-500 to-pink-600', screen: 'community' as const, tab: 'exchange' as const },
+    { icon: MapPin, label: '地图', color: 'from-green-500 to-green-600', screen: 'map' as const },
   ];
 
   return (
@@ -140,7 +143,13 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => 
           {quickActions.map((action, idx) => (
             <button
               key={idx}
-              onClick={() => onNavigate(action.screen)}
+              onClick={() => {
+                if (action.tab) {
+                  onNavigate({ screen: action.screen, query: '', tab: action.tab });
+                } else {
+                  onNavigate(action.screen);
+                }
+              }}
               className="flex flex-col items-center gap-2 p-3 md:p-4 bg-white rounded-2xl shadow-sm hover:shadow-md border border-outline-variant/10 active:scale-95 transition-all"
             >
               <div className={cn(
@@ -237,10 +246,10 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => 
                           </button>
                         </div>
                       </div>
-                      {post.image_path && (
+                      {post.cover_image && (
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden shrink-0">
                           <img
-                            src={post.image_path}
+                            src={post.cover_image}
                             alt=""
                             className="w-full h-full object-cover"
                             referrerPolicy="no-referrer"
@@ -257,32 +266,46 @@ export const HomeScreen = ({ onNavigate }: { onNavigate: NavigateFunction }) => 
                     onClick={() => onNavigate({ screen: 'questionDetail', query: '', questionId: q.question_id })}
                     className="bg-white rounded-2xl p-4 md:p-5 border border-outline-variant/10 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-[0.98]"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="bg-purple-100 text-purple-700 font-bold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
-                        问答
-                      </span>
-                      <span className="text-[11px] text-on-surface-variant">
-                        {q.username || '用户'}
-                      </span>
-                      <span className="text-[10px] text-on-surface-variant/40">
-                        {q.created_at ? new Date(q.created_at).toLocaleString('zh-CN') : ''}
-                      </span>
-                    </div>
-                    <h4 className="text-base md:text-lg font-bold text-on-surface mb-2 line-clamp-1">
-                      {q.title}
-                    </h4>
-                    <p className="text-sm text-on-surface-variant line-clamp-2 leading-relaxed">
-                      {q.content}
-                    </p>
-                    <div className="flex items-center gap-4 mt-3 text-on-surface-variant/60">
-                      <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
-                        <Favorite className="w-4 h-4" />
-                        <span className="text-xs font-semibold">{q.like_count || 0}</span>
-                      </button>
-                      <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
-                        <ChatBubble className="w-4 h-4" />
-                        <span className="text-xs font-semibold">{q.comment_count || 0}</span>
-                      </button>
+                    <div className="flex gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="bg-purple-100 text-purple-700 font-bold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
+                            问答
+                          </span>
+                          <span className="text-[11px] text-on-surface-variant">
+                            {q.username || '用户'}
+                          </span>
+                          <span className="text-[10px] text-on-surface-variant/40">
+                            {q.created_at ? new Date(q.created_at).toLocaleString('zh-CN') : ''}
+                          </span>
+                        </div>
+                        <h4 className="text-base md:text-lg font-bold text-on-surface mb-2 line-clamp-1">
+                          {q.title}
+                        </h4>
+                        <p className="text-sm text-on-surface-variant line-clamp-2 leading-relaxed">
+                          {q.content}
+                        </p>
+                        <div className="flex items-center gap-4 mt-3 text-on-surface-variant/60">
+                          <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
+                            <Favorite className="w-4 h-4" />
+                            <span className="text-xs font-semibold">{q.like_count || 0}</span>
+                          </button>
+                          <button className="flex items-center gap-1.5 hover:text-primary transition-colors">
+                            <ChatBubble className="w-4 h-4" />
+                            <span className="text-xs font-semibold">{q.comment_count || 0}</span>
+                          </button>
+                        </div>
+                      </div>
+                      {q.cover_image && (
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden shrink-0">
+                          <img
+                            src={q.cover_image}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                      )}
                     </div>
                   </article>
                 ))}

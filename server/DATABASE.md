@@ -57,6 +57,7 @@ GrowPal 是一个社交平台，包含用户管理、帖子发布、问答互动
 | user_id | int | NO | MUL | - | 发布者用户ID |
 | title | varchar | NO | - | - | 问题标题 |
 | content | text | NO | - | - | 问题内容 |
+| cover_image | varchar | YES | - | NULL | 封面图片URL  |
 | ai_answer | text | YES | - | NULL | AI生成的解答 |
 | image_path | varchar | YES | - | NULL | 配图路径 |
 | tags | varchar | YES | - | NULL | 标签（逗号分隔） |
@@ -175,6 +176,27 @@ GrowPal 是一个社交平台，包含用户管理、帖子发布、问答互动
 | is_read | tinyint | YES | - | 0 | 是否已读 |
 | created_at | timestamp | YES | - | CURRENT_TIMESTAMP | 创建时间 |
 | updated_at | timestamp | YES | - | CURRENT_TIMESTAMP | 更新时间 |
+
+---
+
+### 10. exchange_flowers - 换花帖子表
+
+存储用户发布的换花帖子内容。
+
+| 字段名             | 类型 | 是否必填 | 索引 | 默认值 | 说明       |
+|-----------------|------|----------|------|--------|----------|
+| exchange_id     | int | NO | PRI | auto_increment | 换花帖子主键ID |
+| user_id         | int | NO | MUL | - | 发布者用户ID  |
+| title           | varchar | NO | - | - | 帖子标题     |
+| content         | text | NO | - | - | 帖子内容     |
+| status          | varchar | YES | - | NULL | 换花状态：pending待交换/confirmed已确认/completed已完成    |
+| cover_image     | varchar | YES | - | NULL | 封面图片URL  |
+| tags            | varchar | YES | - | NULL | 标签（逗号分隔） |
+| exchange_status | varchar | YES | - | published | 发布状态     |
+| view_count      | int | YES | - | 0 | 浏览次数     |
+| created_at      | timestamp | YES | - | CURRENT_TIMESTAMP | 创建时间     |
+| updated_at      | timestamp | YES | - | CURRENT_TIMESTAMP | 更新时间     |
+| image_path      | varchar | YES | - | NULL | 图片路径     |
 
 ---
 

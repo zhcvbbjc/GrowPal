@@ -2,13 +2,14 @@ const pool = require('../config/database');
 
 const Post = {
     create: async (data) => {
-        const sql = 'INSERT INTO posts (user_id, title, content, tags, image_path) VALUES (?, ?, ?, ?, ?)';
+        const sql = 'INSERT INTO posts (user_id, title, content, tags, image_path, cover_image) VALUES (?, ?, ?, ?, ?, ?)';
         const [result] = await pool.query(sql, [
-            data.user_id, 
-            data.title || null, 
-            data.content, 
-            data.tags || null, 
-            data.image_path || null
+            data.user_id,
+            data.title || null,
+            data.content,
+            data.tags || null,
+            data.image_path || null,
+            data.cover_image || null
         ]);
         return result.insertId;
     },

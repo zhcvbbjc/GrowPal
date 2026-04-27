@@ -2,6 +2,7 @@ const Post = require('../../models/Post');
 const { summarizeArticle } = require('../../services/llmService');
 const fs = require('fs');
 const path = require('path');
+const { createUploadMiddleware } = require('../../utils/upload');
 
 const serverRoot = path.join(__dirname, '../..');
 
@@ -18,9 +19,17 @@ exports.createPost = async (req, res) => {
             return res.status(400).json({ message: '请填写内容' });
         }
         const user_id = req.user.id;
-        const image_path = req.file ? `/uploads/${req.file.filename}` : null;
+        
+        // 处理多张图片
+        let image_paths = [];
+        if (req.files && req.files.length > 0) {
+            image_paths = req.files.map(file => `/uploads/post_images/${file.filename}`);
+        }
+        
+        const image_path = image_paths.length > 0 ? image_paths.join(',') : null;
+        const cover_image = image_paths.length > 0 ? image_paths[0] : null;
 
-        const postId = await Post.create({ user_id, content, title, tags, image_path });
+        const postId = await Post.create({ user_id, content, title, tags, image_path, cover_image });
 
         // 异步生成 AI 总结，不阻塞响应
         (async () => {

@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth');
-const upload = require('../utils/upload');
+const { createUploadMiddleware } = require('../utils/upload');
 
 const questionController = require('../controllers/questionController/questionController');
 const questionCommentController = require('../controllers/questionController/questionCommentController');
 const questionLikeController = require('../controllers/questionController/questionLikeController');
 
-router.post('/', authMiddleware, upload.single('image'), questionController.createQuestion);
+// 创建支持多图上传的中间件
+const uploadQuestionImages = createUploadMiddleware('question_images', true).array('images', 10);
+
+router.post('/', authMiddleware, uploadQuestionImages, questionController.createQuestion);
 router.get('/', questionController.getAllQuestions);
 router.get('/:id', questionController.getQuestionById);
 router.delete('/:id', authMiddleware, questionController.deleteQuestion);

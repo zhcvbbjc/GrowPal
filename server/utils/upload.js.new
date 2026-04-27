@@ -69,51 +69,9 @@ const createUploadMiddleware = (type = 'post_images', multiple = true) => {
 };
 
 // 默认单文件上传（向后兼容）
-const upload = createUploadMiddleware('post_images', false);
+const upload = createUploadMiddleware('post_images', false).single('image');
 
-// AI 聊天图片专用上传中间件（向后兼容）
-const aiChatImageStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const aiChatImageDir = path.join(baseUploadDir, uploadDirs.ai_chat_images);
-        if (!fs.existsSync(aiChatImageDir)) {
-            fs.mkdirSync(aiChatImageDir, { recursive: true });
-        }
-        cb(null, aiChatImageDir);
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, uuidv4() + ext);
-    }
-});
-
-const aiChatImageUpload = multer({
-    storage: aiChatImageStorage,
-    limits: { fileSize: 5 * 1024 * 1024, files: 5 },
-    fileFilter
-});
-
-// 头像上传专用中间件（向后兼容）
-const avatarStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const avatarDir = path.join(baseUploadDir, uploadDirs.user_avatars);
-        if (!fs.existsSync(avatarDir)) {
-            fs.mkdirSync(avatarDir, { recursive: true });
-        }
-        cb(null, avatarDir);
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, uuidv4() + ext);
-    }
-});
-
-const avatarUpload = multer({
-    storage: avatarStorage,
-    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
-    fileFilter
-});
-
+// 导出多文件上传中间件工厂函数
 module.exports = upload;
 module.exports.createUploadMiddleware = createUploadMiddleware;
-module.exports.aiChatImageUpload = aiChatImageUpload;
-module.exports.avatarUpload = avatarUpload;
+module.exports.aiChatImageUpload = require('./upload').aiChatImageUpload;
